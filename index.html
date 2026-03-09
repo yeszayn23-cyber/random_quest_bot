@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RandomQuest 🚀</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Amiri&family=Reenie+Beanie&display=swap');
+
+        :root {
+            --purple: #a18cd1; --blue: #70a1ff; --green: #7bed9f; --pink: #ffafbd; --amber: #ff9f43; --bg: #0d0d0d;
+        }
+
+        body {
+            font-family: 'Amiri', serif; margin: 0; padding: 0; min-height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            background: var(--bg); color: white; overflow-x: hidden; text-align: center;
+            background-size: cover; background-position: center; background-attachment: fixed;
+            transition: background 0.8s ease; position: relative;
+        }
+
+        body::before {
+            content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: -1;
+        }
+
+        .logo-container {
+            margin-top: 25px; font-family: 'Reenie Beanie', cursive; font-size: 3.5rem;
+            display: flex; gap: 4px; justify-content: center; position: relative;
+        }
+        .logo-container span { display: inline-block; transition: 0.3s; }
+        .c1 { color: var(--purple); transform: rotate(-5deg); }
+        .c2 { color: var(--blue); transform: rotate(3deg); }
+        .c3 { color: var(--green); transform: rotate(-2deg); }
+        .c4 { color: var(--pink); transform: rotate(4deg); }
+
+        .main-challenge-btn {
+            background: rgba(255, 255, 255, 0.1); border: 2px dashed rgba(255,255,255,0.2);
+            padding: 40px 20px; border-radius: 20px; width: 85%; margin-top: 30px;
+            min-height: 150px; display: flex; flex-direction: column; justify-content: center;
+            backdrop-filter: blur(5px);
+        }
+
+        #dailyTask { font-size: 1.7rem; font-weight: bold; line-height: 1.4; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        #dailyTaskEn { font-family: 'Caveat', cursive; font-size: 1.3rem; opacity: 0.8; margin-top: 15px; }
+
+        .btn-fit {
+            background: var(--amber); color: #121212; border: none; padding: 15px 60px;
+            border-radius: 15% 85% 25% 75% / 75% 25% 75% 25%;
+            font-size: 1.6rem; font-weight: bold; margin-top: 40px; cursor: pointer; 
+            transition: 0.3s; box-shadow: 6px 6px 0px rgba(0,0,0,0.3);
+        }
+        .btn-fit:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; transform: scale(0.9); }
+
+        #statusArea { margin-top: 25px; display: none; background: rgba(123, 237, 159, 0.2); padding: 15px; border-radius: 15px; width: 80%; backdrop-filter: blur(5px); }
+        .timer-box { font-size: 1.1rem; color: var(--pink); font-family: monospace; margin-top: 10px; font-weight: bold; }
+
+        #adminPanel {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; font-family: sans-serif;
+        }
+        .admin-section { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left; border: 1px solid #333; }
+        textarea { width: 100%; height: 80px; background: #222; color: #fff; border: 1px solid #444; border-radius: 10px; padding: 10px; margin-top: 10px; box-sizing: border-box; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 15px; color: #ccc; }
+        th, td { border: 1px solid #333; padding: 10px; text-align: center; }
+        th { background: #252525; color: var(--amber); }
+
+        .close-admin { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; width: 100%; font-weight: bold; }
+        input[type="file"] { background: #333; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-top: 10px; color: #eee; }
+    </style>
+</head>
+<body>
+
+    <div class="logo-container">
+        <span class="c1">ʀ</span><span class="c2">ᴀ</span><span class="c3">ɴ</span><span class="c4">ᴅ</span>
+        <span class="c1">ᴏ</span><span class="c2">م</span><span class="c3">ǫ</span><span class="c4">ᴜ</span>
+        <span class="c1">ᴇ</span><span class="c2">s</span><span class="c3">ᴛ</span>
+    </div>
+
+    <div class="main-challenge-btn">
+        <div id="dailyTask">جاري استدعاء التحدي...</div>
+        <div id="dailyTaskEn">...</div>
+    </div>
+
+    <button id="doneBtn" class="btn-fit" onclick="handleDone()">FIT / تم ✅</button>
+
+    <div id="statusArea">
+        <div style="color: var(--green); font-size: 1.2rem;">بطل! أنجزت المهمة 🏆</div>
+        <div class="timer-box" id="nextQuestTimer">00:00:00</div>
+    </div>
+
+    <div id="adminPanel">
+        <button class="close-admin" onclick="toggleAdmin(false)">إغلاق اللوحة ×</button>
+        <h2 style="color: var(--amber);">الإدارة ⚙️</h2>
+
+        <div class="admin-section">
+            <h3 style="color: var(--blue);">🖼 تغيير خلفية التطبيق للجميع</h3>
+            <input type="file" id="bgInput" accept="image/*">
+            <button onclick="uploadBackground()" id="uploadBtn" style="background:var(--blue); width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer; color:white;">تحديث الخلفية الآن 🚀</button>
+        </div>
+
+        <div class="admin-section">
+            <h3>👥 سجل الزوار</h3>
+            <div id="userStatsCount" style="margin-bottom: 10px; color: var(--green);">جاري الإحصاء...</div>
+            <table>
+                <thead><tr><th>المستخدم</th><th>إنجاز</th><th>آخر ظهور</th></tr></thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="admin-section">
+            <h3>📥 إضافة تحديات بالجملة</h3>
+            <textarea id="bulkAr" placeholder="بالعربية (سطر لكل تحدي)..."></textarea>
+            <textarea id="bulkEn" placeholder="بالإنجليزية (سطر لكل تحدي)..."></textarea>
+            <button onclick="addChallenges()" style="background:var(--green); width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">حفظ المجموعة ☁️</button>
+        </div>
+
+        <button onclick="clearAllData()" style="background:none; color:red; border:1px solid red; width:100%; padding:10px; border-radius:8px; cursor:pointer;">⚠️ مسح كافة التحديات</button>
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
+        const user = tg.initDataUnsafe.user || { id: 12345, first_name: "Guest" };
+        const userId = user.id;
+        
+        // التوكن الجديد 
+        const BOT_TOKEN = "8066162864:AAEcmBdXICIK6Sa4mD_91TjECBvnUCOrI48";
+        const ADMIN_ID = 8421694319; 
+        
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        const firebaseConfig = { databaseURL: "https://randomquest-app-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        db.ref('app_settings/background').on('value', snap => {
+            const bgData = snap.val();
+            if (bgData) { document.body.style.backgroundImage = `url(${bgData})`; }
+        });
+
+        function uploadBackground() {
+            const file = document.getElementById('bgInput').files[0];
+            if (!file) return alert("الرجاء اختيار صورة أولاً!");
+            const btn = document.getElementById('uploadBtn');
+            btn.innerText = "جاري المعالجة والرفع... ⏳"; btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800;
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    db.ref('app_settings/background').set(compressedBase64).then(() => {
+                        alert("تم تحديث الخلفية عند الجميع! 🚀");
+                        btn.innerText = "تحديث الخلفية الآن 🚀"; btn.disabled = false;
+                    });
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function trackUser() {
+            db.ref(`rq_users/${userId}/info`).update({
+                name: user.first_name || "Unknown",
+                lastSeen: new Date().toLocaleString(),
+                id: userId
+            });
+        }
+
+        async function loadChallenge() {
+            const challengesSnap = await db.ref('rq_challenges').once('value');
+            const historySnap = await db.ref(`rq_users/${userId}/history`).once('value');
+            let allTasks = [];
+            challengesSnap.forEach(snap => { allTasks.push({ id: snap.key, ...snap.val() }); });
+
+            if (allTasks.length === 0) {
+                document.getElementById('dailyTask').innerText = "لا يوجد تحديات حالياً!";
+                return;
+            }
+
+            const doneIds = Object.values(historySnap.val() || {}).map(h => h.taskId);
+            let filtered = allTasks.filter(t => !doneIds.includes(t.id));
+            if (filtered.length === 0) filtered = allTasks;
+
+            const seed = (new Date().getDate() + new Date().getMonth()) + parseInt(userId.toString().slice(-4));
+            const selected = filtered[seed % filtered.length];
+            document.getElementById('dailyTask').innerText = selected.ar;
+            document.getElementById('dailyTaskEn').innerText = selected.en;
+            window.currentTask = selected;
+        }
+
+        function handleDone() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            db.ref(`rq_users/${userId}/history/${todayStr}`).set({
+                taskId: window.currentTask.id,
+                taskAr: window.currentTask.ar,
+                doneAt: firebase.database.ServerValue.TIMESTAMP
+            }).then(() => {
+                showDoneUI();
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${userId}&text=تم إنجاز التحدي: ${window.currentTask.ar} ✅`);
+            });
+        }
+
+        function checkStatus() {
+            db.ref(`rq_users/${userId}/history/${todayStr}`).once('value', s => { if(s.exists()) showDoneUI(); });
+        }
+
+        function showDoneUI() {
+            document.getElementById('doneBtn').disabled = true;
+            document.getElementById('doneBtn').innerText = "تم بنجاح! ⚡";
+            document.getElementById('statusArea').style.display = 'block';
+            startTimer();
+        }
+
+        function startTimer() {
+            setInterval(() => {
+                const diff = new Date().setHours(24,0,0,0) - new Date();
+                const h = Math.floor(diff/36e5).toString().padStart(2,'0');
+                const m = Math.floor((diff%36e5)/6e4).toString().padStart(2,'0');
+                const s = Math.floor((diff%6e4)/1000).toString().padStart(2,'0');
+                document.getElementById('nextQuestTimer').innerText = `تحدي جديد خلال: ${h}:${m}:${s}`;
+            }, 1000);
+        }
+
+        function toggleAdmin(show) {
+            document.getElementById('adminPanel').style.display = show ? 'block' : 'none';
+            if(show) loadAdminData();
+        }
+
+        async function addChallenges() {
+            const ar = document.getElementById('bulkAr').value.split('\n').filter(s => s.trim());
+            const en = document.getElementById('bulkEn').value.split('\n').filter(s => s.trim());
+            if(ar.length !== en.length) return alert("العدد غير متطابق!");
+            const updates = {};
+            ar.forEach((text, i) => {
+                const newId = db.ref('rq_challenges').push().key;
+                updates[newId] = { ar: text, en: en[i] };
+            });
+            await db.ref('rq_challenges').update(updates);
+            alert("تمت الإضافة!");
+            document.getElementById('bulkAr').value = ""; document.getElementById('bulkEn').value = "";
+        }
+
+        function loadAdminData() {
+            db.ref('rq_users').on('value', s => {
+                const data = s.val();
+                const tbody = document.getElementById('userTableBody'); tbody.innerHTML = "";
+                let count = 0;
+                for(let id in data) {
+                    count++;
+                    const info = data[id].info || {};
+                    const hist = data[id].history ? Object.keys(data[id].history).length : 0;
+                    tbody.innerHTML += `<tr><td>${info.name || 'GUEST'}</td><td>${hist} 🔥</td><td>${(info.lastSeen || '').split(',')[0]}</td></tr>`;
+                }
+                document.getElementById('userStatsCount').innerText = `إجمالي المستخدمين: ${count}`;
+            });
+        }
+
+        function clearAllData() { if(confirm("حذف كل التحديات؟")) db.ref('rq_challenges').remove(); }
+
+        trackUser(); checkStatus(); loadChallenge();
+
+        if(userId == ADMIN_ID) {
+            const adminBtn = document.createElement('button');
+            adminBtn.innerHTML = "⚙️";
+            adminBtn.style.cssText = "position:fixed; top:15px; left:15px; background:rgba(255,255,255,0.2); border:none; color:white; font-size:20px; border-radius:50%; width:40px; height:40px; cursor:pointer; z-index:1001; backdrop-filter:blur(5px);";
+            adminBtn.onclick = () => toggleAdmin(true);
+            document.body.appendChild(adminBtn);
+        }
+    </script>
+</body>
+</html>
