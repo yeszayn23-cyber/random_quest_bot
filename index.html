@@ -19,7 +19,6 @@
             font-family: 'Amiri', serif; margin: 0; padding: 0; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
             background: var(--bg); color: white; overflow-x: hidden; text-align: center;
-            /* إعدادات الخلفية */
             background-size: cover;
             background-position: center;
             background-attachment: fixed;
@@ -27,13 +26,11 @@
             position: relative;
         }
 
-        /* طبقة تعتيم لضمان وضوح الخط فوق أي صورة */
         body::before {
             content: ""; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0, 0, 0, 0.5); z-index: -1;
         }
 
-        /* Logo */
         .logo-container {
             margin-top: 25px; font-family: 'Reenie Beanie', cursive; font-size: 3.5rem;
             display: flex; gap: 4px; justify-content: center; position: relative;
@@ -44,7 +41,6 @@
         .c3 { color: var(--green); transform: rotate(-2deg); }
         .c4 { color: var(--pink); transform: rotate(4deg); }
 
-        /* Challenge Card */
         .main-challenge-btn {
             background: rgba(255, 255, 255, 0.1); border: 2px dashed rgba(255,255,255,0.2);
             padding: 40px 20px; border-radius: 20px; width: 85%; margin-top: 30px;
@@ -55,21 +51,17 @@
         #dailyTask { font-size: 1.7rem; font-weight: bold; line-height: 1.4; color: #fff; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
         #dailyTaskEn { font-family: 'Caveat', cursive; font-size: 1.3rem; opacity: 0.8; margin-top: 15px; }
 
-        /* Main Button */
         .btn-fit {
             background: var(--amber); color: #121212; border: none; padding: 15px 60px;
             border-radius: 15% 85% 25% 75% / 75% 25% 75% 25%;
             font-size: 1.6rem; font-weight: bold; margin-top: 40px; cursor: pointer; 
             transition: 0.3s; box-shadow: 6px 6px 0px rgba(0,0,0,0.3);
         }
-        .btn-fit:active { transform: scale(0.95); box-shadow: none; }
         .btn-fit:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; transform: scale(0.9); }
 
-        /* Status & Timer */
         #statusArea { margin-top: 25px; display: none; background: rgba(123, 237, 159, 0.2); padding: 15px; border-radius: 15px; width: 80%; backdrop-filter: blur(5px); }
         .timer-box { font-size: 1.1rem; color: var(--pink); font-family: monospace; margin-top: 10px; font-weight: bold; }
 
-        /* Admin Panel */
         #adminPanel {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; font-family: sans-serif;
@@ -81,8 +73,6 @@
         th { background: #252525; color: var(--amber); }
 
         .close-admin { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; margin-bottom: 20px; width: 100%; font-weight: bold; }
-        
-        /* مظهر زر رفع الملف */
         input[type="file"] { background: #333; padding: 10px; border-radius: 8px; width: 100%; box-sizing: border-box; margin-top: 10px; color: #eee; }
     </style>
 </head>
@@ -112,9 +102,8 @@
 
         <div class="admin-section">
             <h3 style="color: var(--blue);">🖼 تغيير خلفية التطبيق للجميع</h3>
-            <p style="font-size: 0.8rem; color: #888;">اختر صورة من هاتفك لتظهر كخلفية لكل المستخدمين.</p>
             <input type="file" id="bgInput" accept="image/*">
-            <button onclick="uploadBackground()" style="background:var(--blue); width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer; color:white;">تحديث الخلفية الآن 🚀</button>
+            <button onclick="uploadBackground()" id="uploadBtn" style="background:var(--blue); width:100%; padding:12px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer; color:white;">تحديث الخلفية الآن 🚀</button>
         </div>
 
         <div class="admin-section">
@@ -128,8 +117,8 @@
 
         <div class="admin-section">
             <h3>📥 إضافة تحديات بالجملة</h3>
-            <textarea id="bulkAr" placeholder="التحديات بالعربية (سطر لكل تحدي)..."></textarea>
-            <textarea id="bulkEn" placeholder="Challenges in English (line per task)..."></textarea>
+            <textarea id="bulkAr" placeholder="بالعربية (سطر لكل تحدي)..."></textarea>
+            <textarea id="bulkEn" placeholder="بالإنجليزية (سطر لكل تحدي)..."></textarea>
             <button onclick="addChallenges()" style="background:var(--green); width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">حفظ المجموعة ☁️</button>
         </div>
 
@@ -144,48 +133,47 @@
         const ADMIN_ID = 8421694319; 
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // Firebase Config
-        const firebaseConfig = { databaseURL: "https://allahfirst-b9c52-default-rtdb.firebaseio.com/" };
+        // الربط بقاعدة البيانات الجديدة التي وضعتها
+        const firebaseConfig = { databaseURL: "https://randomquest-app-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // --- الميزة الجديدة: مراقبة الخلفية ---
+        // استقبال الخلفية عند الجميع
         db.ref('app_settings/background').on('value', snap => {
             const bgData = snap.val();
-            if (bgData) {
-                document.body.style.backgroundImage = `url(${bgData})`;
-            }
+            if (bgData) { document.body.style.backgroundImage = `url(${bgData})`; }
         });
 
-        // دالة رفع الخلفية (للإدمن فقط)
+        // دالة رفع وتصغير الصورة لضمان عملها في الفايربيز
         function uploadBackground() {
             const file = document.getElementById('bgInput').files[0];
             if (!file) return alert("الرجاء اختيار صورة أولاً!");
-
-            // تنبيه بالتحميل
-            const btn = event.target;
-            const originalText = btn.innerText;
-            btn.innerText = "جاري الرفع... ⏳";
-            btn.disabled = true;
+            const btn = document.getElementById('uploadBtn');
+            btn.innerText = "جاري المعالجة والرفع... ⏳"; btn.disabled = true;
 
             const reader = new FileReader();
             reader.onload = function(e) {
-                const base64Image = e.target.result;
-                db.ref('app_settings/background').set(base64Image)
-                .then(() => {
-                    alert("تم تحديث الخلفية عند الجميع! 🚀");
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                }).catch(err => {
-                    alert("خطأ في الرفع: " + err.message);
-                    btn.innerText = originalText;
-                    btn.disabled = false;
-                });
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_WIDTH = 800; // تصغير الصورة لضمان السرعة
+                    const scaleSize = MAX_WIDTH / img.width;
+                    canvas.width = MAX_WIDTH;
+                    canvas.height = img.height * scaleSize;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                    
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); // جودة متوسطة
+                    db.ref('app_settings/background').set(compressedBase64).then(() => {
+                        alert("تم تحديث الخلفية عند الجميع! 🚀");
+                        btn.innerText = "تحديث الخلفية الآن 🚀"; btn.disabled = false;
+                    });
+                };
+                img.src = e.target.result;
             };
             reader.readAsDataURL(file);
         }
 
-        // 1. Track User Activity
         function trackUser() {
             db.ref(`rq_users/${userId}/info`).update({
                 name: user.first_name || "Unknown",
@@ -194,52 +182,39 @@
             });
         }
 
-        // 2. Logic: Load Unique Challenge
         async function loadChallenge() {
             const challengesSnap = await db.ref('rq_challenges').once('value');
             const historySnap = await db.ref(`rq_users/${userId}/history`).once('value');
-            
             let allTasks = [];
-            challengesSnap.forEach(snap => {
-                allTasks.push({ id: snap.key, ...snap.val() });
-            });
+            challengesSnap.forEach(snap => { allTasks.push({ id: snap.key, ...snap.val() }); });
 
             if (allTasks.length === 0) {
                 document.getElementById('dailyTask').innerText = "لا يوجد تحديات حالياً!";
                 return;
             }
 
-            const myHistory = historySnap.val() || {};
-            const doneIds = Object.values(myHistory).map(h => h.taskId);
-
+            const doneIds = Object.values(historySnap.val() || {}).map(h => h.taskId);
             let filtered = allTasks.filter(t => !doneIds.includes(t.id));
             if (filtered.length === 0) filtered = allTasks;
 
             const seed = (new Date().getDate() + new Date().getMonth()) + parseInt(userId.toString().slice(-4));
-            const finalIndex = seed % filtered.length;
-            const selected = filtered[finalIndex];
-
+            const selected = filtered[seed % filtered.length];
             document.getElementById('dailyTask').innerText = selected.ar;
             document.getElementById('dailyTaskEn').innerText = selected.en;
             window.currentTask = selected;
         }
 
-        // 3. Handle Done
         function handleDone() {
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             db.ref(`rq_users/${userId}/history/${todayStr}`).set({
                 taskId: window.currentTask.id,
                 taskAr: window.currentTask.ar,
                 doneAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                showDoneUI();
-            });
+            }).then(() => showDoneUI());
         }
 
         function checkStatus() {
-            db.ref(`rq_users/${userId}/history/${todayStr}`).once('value', s => {
-                if(s.exists()) showDoneUI();
-            });
+            db.ref(`rq_users/${userId}/history/${todayStr}`).once('value', s => { if(s.exists()) showDoneUI(); });
         }
 
         function showDoneUI() {
@@ -251,9 +226,7 @@
 
         function startTimer() {
             setInterval(() => {
-                const now = new Date();
-                const target = new Date().setHours(24,0,0,0);
-                const diff = target - now;
+                const diff = new Date().setHours(24,0,0,0) - new Date();
                 const h = Math.floor(diff/36e5).toString().padStart(2,'0');
                 const m = Math.floor((diff%36e5)/6e4).toString().padStart(2,'0');
                 const s = Math.floor((diff%6e4)/1000).toString().padStart(2,'0');
@@ -261,7 +234,6 @@
             }, 1000);
         }
 
-        // --- Admin Functions ---
         function toggleAdmin(show) {
             document.getElementById('adminPanel').style.display = show ? 'block' : 'none';
             if(show) loadAdminData();
@@ -284,31 +256,21 @@
         function loadAdminData() {
             db.ref('rq_users').on('value', s => {
                 const data = s.val();
-                const tbody = document.getElementById('userTableBody');
-                tbody.innerHTML = "";
+                const tbody = document.getElementById('userTableBody'); tbody.innerHTML = "";
                 let count = 0;
                 for(let id in data) {
                     count++;
                     const info = data[id].info || {};
-                    const historyCount = data[id].history ? Object.keys(data[id].history).length : 0;
-                    tbody.innerHTML += `<tr>
-                        <td>${info.name || 'GUEST'}</td>
-                        <td>${historyCount} 🔥</td>
-                        <td>${(info.lastSeen || '').split(',')[0]}</td>
-                    </tr>`;
+                    const hist = data[id].history ? Object.keys(data[id].history).length : 0;
+                    tbody.innerHTML += `<tr><td>${info.name || 'GUEST'}</td><td>${hist} 🔥</td><td>${(info.lastSeen || '').split(',')[0]}</td></tr>`;
                 }
                 document.getElementById('userStatsCount').innerText = `إجمالي المستخدمين: ${count}`;
             });
         }
 
-        function clearAllData() {
-            if(confirm("حذف كل التحديات؟")) db.ref('rq_challenges').remove();
-        }
+        function clearAllData() { if(confirm("حذف كل التحديات؟")) db.ref('rq_challenges').remove(); }
 
-        // Init
-        trackUser();
-        checkStatus();
-        loadChallenge();
+        trackUser(); checkStatus(); loadChallenge();
 
         if(userId == ADMIN_ID) {
             const adminBtn = document.createElement('button');
@@ -317,7 +279,6 @@
             adminBtn.onclick = () => toggleAdmin(true);
             document.body.appendChild(adminBtn);
         }
-
     </script>
 </body>
 </html>
