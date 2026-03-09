@@ -19,11 +19,8 @@
             font-family: 'Amiri', serif; margin: 0; padding: 0; min-height: 100vh;
             display: flex; flex-direction: column; align-items: center;
             background: var(--bg); color: white; overflow-x: hidden; text-align: center;
-            background-size: cover;
-            background-position: center;
-            background-attachment: fixed;
-            transition: background 0.8s ease;
-            position: relative;
+            background-size: cover; background-position: center; background-attachment: fixed;
+            transition: background 0.8s ease; position: relative;
         }
 
         body::before {
@@ -133,18 +130,15 @@
         const ADMIN_ID = 8421694319; 
         const todayStr = new Date().toISOString().split('T')[0];
 
-        // الربط بقاعدة البيانات الجديدة التي وضعتها
         const firebaseConfig = { databaseURL: "https://randomquest-app-default-rtdb.firebaseio.com/" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
-        // استقبال الخلفية عند الجميع
         db.ref('app_settings/background').on('value', snap => {
             const bgData = snap.val();
             if (bgData) { document.body.style.backgroundImage = `url(${bgData})`; }
         });
 
-        // دالة رفع وتصغير الصورة لضمان عملها في الفايربيز
         function uploadBackground() {
             const file = document.getElementById('bgInput').files[0];
             if (!file) return alert("الرجاء اختيار صورة أولاً!");
@@ -156,14 +150,14 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const MAX_WIDTH = 800; // تصغير الصورة لضمان السرعة
+                    const MAX_WIDTH = 800;
                     const scaleSize = MAX_WIDTH / img.width;
                     canvas.width = MAX_WIDTH;
                     canvas.height = img.height * scaleSize;
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
                     
-                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); // جودة متوسطة
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
                     db.ref('app_settings/background').set(compressedBase64).then(() => {
                         alert("تم تحديث الخلفية عند الجميع! 🚀");
                         btn.innerText = "تحديث الخلفية الآن 🚀"; btn.disabled = false;
