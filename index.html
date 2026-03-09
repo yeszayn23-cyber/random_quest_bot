@@ -127,7 +127,11 @@
         tg.expand();
         const user = tg.initDataUnsafe.user || { id: 12345, first_name: "Guest" };
         const userId = user.id;
+        
+        // التوكن الجديد والآيدي الخاص بكِ
+        const BOT_TOKEN = "8759264594:AAG4m2D3JUWzJ6sA3ZzoTcmUyproNz8DZCQ";
         const ADMIN_ID = 8421694319; 
+        
         const todayStr = new Date().toISOString().split('T')[0];
 
         const firebaseConfig = { databaseURL: "https://randomquest-app-default-rtdb.firebaseio.com/" };
@@ -204,7 +208,11 @@
                 taskId: window.currentTask.id,
                 taskAr: window.currentTask.ar,
                 doneAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => showDoneUI());
+            }).then(() => {
+                showDoneUI();
+                // إشعار اختياري عبر التلجرام باستخدام التوكن الجديد
+                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${userId}&text=تم إنجاز التحدي: ${window.currentTask.ar} ✅`);
+            });
         }
 
         function checkStatus() {
