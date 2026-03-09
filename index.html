@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RandomQuest 🚀</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap');
+
+        :root {
+            --purple: #8a2be2;
+            --blue: #0000ff;
+            --green: #00ff00;
+            --pink: #ff69b4;
+            --neon: #00ffcc;
+        }
+
+        body {
+            font-family: 'Cairo', sans-serif;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #0d0d0d no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            overflow: hidden;
+        }
+
+        /* تصميم شعار الأحرف المزخرفة */
+        .logo-container {
+            margin-top: 30px;
+            display: flex;
+            gap: 5px;
+            font-size: 2.5rem;
+            font-weight: 900;
+        }
+        .letter-r { color: var(--purple); transform: skewX(-15deg) translateY(5px); display: inline-block; } /* شكل زحليقة */
+        .letter-a { color: var(--blue); clip-path: polygon(50% 0%, 0% 100%, 100% 100%); } /* شكل مثلث/خيمة */
+        .letter-n { color: var(--green); text-decoration: underline; }
+        .letter-d { color: var(--pink); border-radius: 0 50% 50% 0; border: 2px solid; }
+
+        .main-challenge-btn {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 3px solid var(--neon);
+            padding: 25px;
+            border-radius: 30px;
+            width: 85%;
+            margin-top: 40px;
+            box-shadow: 0 0 20px var(--neon);
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .challenge-text {
+            font-size: 1.4rem;
+            margin-bottom: 10px;
+        }
+
+        .btn-fit {
+            background: linear-gradient(45deg, var(--green), #155724);
+            color: white;
+            border: none;
+            padding: 15px 50px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-top: 20px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,255,0,0.3);
+        }
+
+        .stats-circle-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .admin-btn { position: fixed; top: 10px; right: 10px; opacity: 0.5; }
+
+        #adminPanel {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 1000;
+            padding: 20px; overflow-y: auto;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo-container">
+        <span class="letter-r">R</span><span>A</span><span>N</span><span>D</span><span>O</span><span>M</span>
+    </div>
+    <div style="font-size: 1.2rem; letter-spacing: 8px; color: var(--neon);">QUEST</div>
+
+    <div class="main-challenge-btn">
+        <div class="challenge-text" id="dailyTask">جاري تحميل تحدي اليوم...</div>
+        <div style="font-size: 0.9rem; color: #ccc;" id="dailyTaskEn">Loading quest...</div>
+    </div>
+
+    <button class="btn-fit" onclick="handleDone()">
+        FIT / تم ✅
+    </button>
+
+    <button onclick="showStats()" style="margin-top: 30px; background:none; border:1px solid white; color:white; padding:10px; border-radius:15px;">
+        Monthly Statistics / إحصائيات الشهر 📊
+    </button>
+
+    <div id="adminPanel">
+        <button onclick="closeAdmin()" style="float: left; color: red;">إغلاق</button>
+        <h2>لوحة التحكم 🛠</h2>
+        <input type="text" id="taskAr" placeholder="التحدي بالعربي" style="width: 100%; padding: 10px; margin: 5px 0;">
+        <input type="text" id="taskEn" placeholder="Challenge in English" style="width: 100%; padding: 10px; margin: 5px 0;">
+        <button onclick="addNewChallenge()" style="width: 100%; padding: 10px; background: var(--green);">إضافة تحدي</button>
+        
+        <hr>
+        <p>تغيير الخلفية للجميع 📸</p>
+        <input type="file" id="bgInput" onchange="updateBg(this)">
+    </div>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        const ADMIN_ID = 8421694319;
+        const userId = tg.initDataUnsafe.user?.id;
+
+        // ربط الفايربيس (باستخدام رابطك)
+        const firebaseConfig = { databaseURL: "https://allahfirst-b9c52-default-rtdb.firebaseio.com/" };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // جلب الخلفية والتحدي
+        db.ref('rq_settings/bg').on('value', s => {
+            if(s.val()) document.body.style.backgroundImage = `url(${s.val()})`;
+        });
+
+        // اختيار تحدي عشوائي للمستخدم بناءً على اليوم
+        function loadDailyChallenge() {
+            db.ref('rq_challenges').once('value', s => {
+                const tasks = Object.values(s.val() || {t1: {ar: "ابتسم اليوم", en: "Smile today"}});
+                const day = new Date().getDate();
+                const seed = userId ? (userId + day) : day;
+                const index = seed % tasks.length;
+                document.getElementById('dailyTask').innerText = tasks[index].ar;
+                document.getElementById('dailyTaskEn').innerText = tasks[index].en;
+            });
+        }
+        loadDailyChallenge();
+
+        function handleDone() {
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            if(userId) {
+                db.ref('rq_users/' + userId + '/completed').push(new Date().toISOString());
+                alert("Quest Completed! تم تسجيل الإنجاز 🎉");
+            }
+        }
+
+        function showStats() {
+            db.ref('rq_users/' + userId + '/completed').once('value', s => {
+                const count = s.val() ? Object.keys(s.val()).length : 0;
+                alert(`إحصائياتك: لقد أتممت ${count} تحدي من أصل 30! 🔥`);
+            });
+        }
+
+        // صلاحيات الإدمن
+        if(userId === ADMIN_ID) {
+            const abtn = document.createElement('button');
+            abtn.innerText = "⚙️";
+            abtn.className = "admin-btn";
+            abtn.onclick = () => document.getElementById('adminPanel').style.display='block';
+            document.body.appendChild(abtn);
+        }
+
+        function closeAdmin() { document.getElementById('adminPanel').style.display='none'; }
+
+        function addNewChallenge() {
+            const ar = document.getElementById('taskAr').value;
+            const en = document.getElementById('taskEn').value;
+            if(ar && en) {
+                db.ref('rq_challenges').push({ar, en});
+                alert("تمت الإضافة!");
+                document.getElementById('taskAr').value = "";
+                document.getElementById('taskEn').value = "";
+            }
+        }
+
+        function updateBg(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = e => {
+                db.ref('rq_settings/bg').set(e.target.result);
+                alert("تم تغيير الخلفية للجميع!");
+            };
+            reader.readAsDataURL(file);
+        }
+    </script>
+</body>
+</html>
