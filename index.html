@@ -3,74 +3,192 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RQ-V2 🚀</title>
-    <script src="https://telegram.org/js/telegram-web-app.js?id=random123"></script>
+    <title>ʀᴀɴᴅᴏᴍǫᴜᴇsᴛ</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@700&family=Amiri:wght@700&display=swap');
+        
         :root { --p: #a18cd1; --a: #ff9f43; --bg: #050505; }
-        body { font-family: 'Amiri', serif; background: var(--bg); color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; justify-content: center; }
-        .card { background: rgba(255,255,255,0.05); border: 2px solid var(--p); padding: 30px; border-radius: 25px; width: 80%; backdrop-filter: blur(10px); box-shadow: 0 10px 30px rgba(161,140,209,0.2); }
-        #task { font-size: 1.8rem; margin-bottom: 10px; color: #fff; }
-        #taskEn { font-family: 'Caveat', cursive; font-size: 1.4rem; color: var(--a); }
-        .btn-main { background: var(--a); color: #000; border: none; padding: 18px 45px; border-radius: 50px; font-size: 1.5rem; font-weight: bold; margin-top: 30px; cursor: pointer; transition: 0.3s; box-shadow: 0 5px 15px rgba(255,159,67,0.4); }
-        .btn-main:active { transform: scale(0.95); }
-        #adminBtn { position: fixed; bottom: 20px; right: 20px; background: none; border: 1px solid #444; color: #444; border-radius: 50%; width: 40px; height: 40px; }
+        
+        body { 
+            font-family: 'Amiri', serif; 
+            background: var(--bg); 
+            background-size: cover; 
+            background-position: center;
+            color: #fff; margin: 0; display: flex; flex-direction: column; align-items: center; 
+            min-height: 100vh; overflow-x: hidden;
+        }
+
+        .app-name { font-family: 'Caveat', cursive; font-size: 3rem; margin-top: 20px; color: var(--p); text-shadow: 0 0 10px rgba(161,140,209,0.5); }
+
+        .card { 
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); 
+            padding: 25px; border-radius: 25px; width: 85%; backdrop-filter: blur(15px); 
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5); text-align: center; margin-top: 30px;
+        }
+
+        #task { font-size: 1.6rem; margin-bottom: 5px; min-height: 50px; }
+        #taskEn { font-family: 'Caveat', cursive; font-size: 1.3rem; color: var(--a); margin-bottom: 20px; }
+
+        .btn { 
+            border: none; padding: 15px 30px; border-radius: 15px; font-size: 1.2rem; 
+            font-weight: bold; cursor: pointer; transition: 0.3s; width: 90%; margin: 10px 0;
+        }
+        .btn-challenge { background: var(--p); color: #fff; }
+        .btn-complete { background: #4CAF50; color: #fff; display: none; }
+        .btn:disabled { background: #333; cursor: not-allowed; opacity: 0.6; }
+
+        #timer { font-family: monospace; color: #ff4444; font-size: 1.1rem; margin-top: 10px; }
+
+        /* Stats & Settings */
+        .bottom-nav { position: fixed; bottom: 20px; width: 90%; display: flex; justify-content: space-between; }
+        .icon-btn { background: rgba(255,255,255,0.1); border: none; color: #fff; padding: 10px; border-radius: 12px; font-size: 1.2rem; }
+
+        /* Modal Settings */
+        #settingsModal { 
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(0,0,0,0.9); z-index: 100; flex-direction: column; align-items: center; justify-content: center;
+        }
+        input, textarea { width: 80%; padding: 10px; margin: 5px; border-radius: 8px; border: none; }
     </style>
 </head>
 <body>
 
+    <div class="app-name">ʀᴀɴᴅᴏᴍǫᴜᴇsᴛ</div>
+
     <div class="card">
-        <div id="task">تحدي اليوم...</div>
-        <div id="taskEn">Daily Quest...</div>
+        <div id="task">اضغط للحصول على تحدي..</div>
+        <div id="taskEn">Click to get a quest..</div>
+        
+        <button id="getBtn" class="btn btn-challenge" onclick="generateQuest()">التحدي / Challenge</button>
+        <button id="doneBtn" class="btn btn-complete" onclick="markDone()">تم الإكمال / Challenge Completed</button>
+        
+        <div id="timer"></div>
+        <div id="progress" style="margin-top:10px; font-size: 0.9rem;">التحديات المكتملة: <span id="count">0</span>/30</div>
     </div>
 
-    <button id="mainBtn" class="btn-main" onclick="finish()">تم الإنجاز ✅</button>
+    <div class="bottom-nav">
+        <button class="icon-btn" onclick="showStats()">📊 الإحصائيات / Statistics</button>
+        <button id="adminGear" class="icon-btn" style="display:none;" onclick="toggleSettings()">⚙️</button>
+    </div>
+
+    <div id="settingsModal">
+        <h3>إعدادات الإدارة ⚙️</h3>
+        <input type="text" id="bgUrl" placeholder="رابط صورة الخلفية Direct Image URL">
+        <button class="btn" onclick="saveBg()" style="background:var(--a)">حفظ الخلفية للجميع</button>
+        <textarea id="newChallenges" rows="5" placeholder="اكتب التحديات هنا (تحدي في كل سطر)"></textarea>
+        <button class="btn" onclick="saveChallenges()">تحديث التحديات</button>
+        <button class="btn" onclick="toggleSettings()" style="background:#555">إغلاق</button>
+    </div>
 
     <script>
-        // التوكن الجديد اللي عطيتيهولي
         const MY_TOKEN = "8066162864:AAEcmBdXICIK6Sa4mD_91TjECBvnUCOrI48";
-        const MY_ADMIN = 8421694319;
-
+        const ADMIN_ID = 8421694319; // معرفك الخاص يا زينب
+        
         const webApp = window.Telegram.WebApp;
-        webApp.expand();
         const uId = webApp.initDataUnsafe.user?.id || 123;
+        const uName = webApp.initDataUnsafe.user?.first_name || "Guest";
 
-        // ربط فايربيس
         firebase.initializeApp({ databaseURL: "https://randomquest-app-default-rtdb.firebaseio.com/" });
         const rdb = firebase.database();
 
-        async function getQuest() {
-            const snap = await rdb.ref('rq_challenges').once('value');
-            const data = snap.val();
-            if (data) {
-                const keys = Object.keys(data);
-                const rand = keys[Math.floor(Math.random() * keys.length)];
-                document.getElementById('task').innerText = data[rand].ar;
-                document.getElementById('taskEn').innerText = data[rand].en;
-                window.currentQ = data[rand].ar;
+        // 1. تحميل الخلفية العامة
+        rdb.ref('app_config/bg_url').on('value', s => {
+            if(s.val()) document.body.style.backgroundImage = `url('${s.val()}')`;
+        });
+
+        // 2. التحقق من حالة المستخدم
+        async function checkStatus() {
+            const snap = await rdb.ref(`users/${uId}`).once('value');
+            const data = snap.val() || { count: 0, last_time: 0, history: [] };
+            
+            document.getElementById('count').innerText = data.count || 0;
+            
+            const now = Date.now();
+            const diff = now - data.last_time;
+            
+            if(diff < 24 * 60 * 60 * 1000) {
+                startTimer(24 * 60 * 60 * 1000 - diff);
+                disableButtons();
             }
         }
 
-        function finish() {
-            confetti({ particleCount: 100, spread: 70 });
-            document.getElementById('mainBtn').disabled = true;
-            document.getElementById('mainBtn').innerText = "بطل! 🔥";
+        async function generateQuest() {
+            const snap = await rdb.ref('rq_challenges').once('value');
+            const challenges = snap.val();
+            if(!challenges) return alert("لا توجد تحديات مضافة!");
+
+            const userSnap = await rdb.ref(`users/${uId}/history`).once('value');
+            const history = userSnap.val() || [];
+
+            // اختيار تحدي لم يسبق اختياره
+            const available = Object.keys(challenges).filter(k => !history.includes(k));
+            if(available.length === 0) {
+                alert("لقد أتممت جميع التحديات المتاحة!");
+                return;
+            }
+
+            const randKey = available[Math.floor(Math.random() * available.length)];
+            const q = challenges[randKey];
             
-            // إرسال الرسالة بالتوكن الجديد
-            fetch(`https://api.telegram.org/bot${MY_TOKEN}/sendMessage?chat_id=${uId}&text=🏆 كفو! خلصت تحدي: ${window.currentQ || 'تحدي اليوم'}`);
+            document.getElementById('task').innerText = q.ar;
+            document.getElementById('taskEn').innerText = q.en;
+            window.currentQKey = randKey;
+            
+            document.getElementById('getBtn').style.display = 'none';
+            document.getElementById('doneBtn').style.display = 'block';
         }
 
-        getQuest();
+        async function markDone() {
+            confetti({ particleCount: 150, spread: 70 });
+            const now = Date.now();
+            
+            // تحديث بيانات المستخدم
+            const ref = rdb.ref(`users/${uId}`);
+            const snap = await ref.once('value');
+            const data = snap.val() || { count: 0, history: [] };
 
-        if(uId == MY_ADMIN) {
-            let a = document.createElement('button');
-            a.id = "adminBtn"; a.innerText = "⚙️";
-            a.onclick = () => alert("لوحة الإدارة قيد التحديث...");
-            document.body.appendChild(a);
+            await ref.update({
+                count: (data.count || 0) + 1,
+                last_time: now,
+                history: [...(data.history || []), window.currentQKey]
+            });
+
+            // إرسال إشعار تيليجرام
+            fetch(`https://api.telegram.org/bot${MY_TOKEN}/sendMessage?chat_id=${uId}&text=🏆 أحسنتِ يا ${uName}! أتممتِ التحدي رقم ${data.count + 1}`);
+
+            location.reload(); // لإعادة حساب العداد
         }
+
+        function startTimer(duration) {
+            const display = document.getElementById('timer');
+            let timer = duration / 1000;
+            setInterval(() => {
+                let h = Math.floor(timer / 3600);
+                let m = Math.floor((timer % 3600) / 60);
+                let s = Math.floor(timer % 60);
+                display.innerText = `التحدي القادم خلال: ${h}:${m}:${s}`;
+                if (--timer < 0) location.reload();
+            }, 1000);
+        }
+
+        function disableButtons() {
+            document.getElementById('getBtn').disabled = true;
+            document.getElementById('getBtn').innerText = "تم إكمال تحدي اليوم";
+        }
+
+        // وظائف الإدارة
+        if(uId == ADMIN_ID) document.getElementById('adminGear').style.display = 'block';
+        function toggleSettings() { 
+            const m = document.getElementById('settingsModal');
+            m.style.display = (m.style.display == 'flex') ? 'none' : 'flex'; 
+        }
+        function saveBg() { rdb.ref('app_config/bg_url').set(document.getElementById('bgUrl').value); alert("تم التحديث!"); }
+        
+        checkStatus();
     </script>
 </body>
 </html>
