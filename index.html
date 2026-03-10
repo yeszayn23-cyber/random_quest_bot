@@ -3,64 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Random Quest - Ultimate Edition 🚀</title>
+    <title>Random Quest - Zainab Edition 🚀</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Caveat:wght@700&display=swap');
-        :root { --neon-green: #39ff14; --neon-blue: #00ffff; --pink: #ff75c3; --bg-dark: #050510; --glass: rgba(255, 255, 255, 0.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&display=swap');
+        :root { --neon-green: #39ff14; --neon-blue: #00ffff; --pink: #ff75c3; --bg-dark: #050510; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; height: 100vh; background: var(--bg-dark) no-repeat center center/cover; color: white; overflow: hidden; display: flex; flex-direction: column; align-items: center; transition: 0.5s; }
         
-        body { font-family: 'Montserrat', sans-serif; margin: 0; height: 100vh; background: var(--bg-dark) no-repeat center center/cover; color: white; overflow: hidden; display: flex; flex-direction: column; align-items: center; transition: background 0.5s ease; }
+        .brand-name { margin-top: 20px; font-size: 2.2rem; font-weight: 900; background: linear-gradient(45deg, var(--neon-green), var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 8px var(--neon-green)); }
+        .top-controls { position: absolute; top: 15px; width: 90%; display: flex; justify-content: space-between; z-index: 2000; }
+        .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(57, 255, 20, 0.2); color: white; border-radius: 50%; width: 45px; height: 45px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: 0.3s; }
+
+        /* الألعاب */
+        #gameSection { display: none; width: 92%; margin-top: 15px; }
+        #activeGameContainer { background: #000; border: 2px solid var(--neon-green); border-radius: 20px; height: 280px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(57,255,20,0.2); }
         
-        /* Header & Brand */
-        .brand-name { margin-top: 25px; font-size: 2.5rem; font-weight: 900; background: linear-gradient(45deg, var(--neon-green), var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px var(--neon-green)); letter-spacing: -1px; }
-        
-        .top-controls { position: absolute; top: 20px; width: 92%; display: flex; justify-content: space-between; z-index: 2000; }
-        .icon-btn { background: var(--glass); border: 1px solid rgba(57, 255, 20, 0.3); color: white; border-radius: 50%; width: 48px; height: 48px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; transition: 0.3s; backdrop-filter: blur(5px); }
-        .icon-btn:active { transform: scale(0.9); border-color: var(--neon-green); }
+        /* Pepe Style - Fast & Small */
+        #pepe { width: 40px; height: 40px; position: absolute; bottom: 10px; left: 40px; font-size: 2.2rem; z-index: 100; transition: bottom 0.18s ease-out; filter: drop-shadow(0 0 5px var(--neon-green)); }
+        .obstacle { width: 25px; height: 25px; position: absolute; bottom: 10px; right: -50px; font-size: 1.3rem; }
+        #liveScore { position: absolute; top: 10px; left: 10px; color: var(--neon-green); font-size: 1.2rem; font-family: monospace; z-index: 101; }
 
-        /* Quest UI */
-        .challenge-card { background: rgba(0, 0, 0, 0.8); border: 2px solid var(--neon-green); padding: 25px; border-radius: 30px; width: 85%; margin-top: 30px; box-shadow: 0 0 30px rgba(57, 255, 20, 0.15); text-align: center; position: relative; overflow: hidden; }
-        #dailyTask { font-size: 1.5rem; font-weight: 800; line-height: 1.4; }
-        #dailyTaskEn { font-size: 0.85rem; opacity: 0.5; margin-top: 10px; font-family: sans-serif; }
-        .btn-main { background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); color: black; border: none; padding: 15px 50px; border-radius: 50px; font-size: 1.3rem; font-weight: bold; margin-top: 25px; cursor: pointer; box-shadow: 0 5px 15px rgba(57, 255, 20, 0.4); transition: 0.3s; }
+        /* Memory */
+        .mem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; width: 100%; height: 100%; }
+        .card { background: #111; border: 1px solid var(--neon-blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; cursor: pointer; }
 
-        /* Game Section */
-        #gameSection { display: none; width: 92%; margin-top: 20px; animation: fadeIn 0.5s; }
-        #gameTabs { display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; }
-        #activeGameContainer { background: #000; border: 2px solid var(--neon-green); border-radius: 25px; height: 300px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; box-shadow: inset 0 0 20px rgba(57, 255, 20, 0.2); }
+        /* Progress & Admin */
+        .progress-container { width: 85%; margin-top: auto; margin-bottom: 25px; }
+        .progress-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: var(--neon-green); width: 0%; transition: 1s; box-shadow: 0 0 10px var(--neon-green); }
 
-        /* Pepe Jump Specific */
-        #pepe { width: 60px; height: 60px; position: absolute; bottom: 15px; left: 40px; font-size: 3rem; filter: drop-shadow(0 0 15px var(--neon-green)); z-index: 100; transition: bottom 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
-        .obstacle { width: 35px; height: 35px; position: absolute; bottom: 15px; right: -50px; font-size: 1.8rem; filter: drop-shadow(0 0 10px var(--neon-blue)); }
-        #liveScore { position: absolute; top: 15px; left: 20px; font-family: 'Courier New', monospace; font-size: 1.5rem; color: var(--neon-green); z-index: 110; }
-
-        /* Memory Grid */
-        .mem-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; width: 100%; height: 100%; }
-        .card { background: #0a0a15; border: 1px solid var(--neon-blue); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px rgba(0, 255, 255, 0.1); }
-        .card.flipped { border-color: var(--neon-green); background: #111; }
-
-        /* Progress Bar */
-        .progress-container { width: 85%; margin-top: auto; margin-bottom: 30px; }
-        .progress-bar { height: 10px; background: rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; border: 1px solid rgba(255,255,255,0.1); }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); width: 0%; box-shadow: 0 0 15px var(--neon-green); transition: 1.5s cubic-bezier(0.1, 0.7, 1.0, 0.1); }
-
-        /* Admin Panels */
-        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 5000; padding: 25px; overflow-y: auto; text-align: right; }
-        .admin-sec { background: rgba(255,255,255,0.03); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #333; }
-        input { width: 94%; padding: 12px; margin: 10px 0; border-radius: 12px; background: #000; color: #fff; border: 1px solid #444; font-size: 1rem; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { color: var(--neon-blue); padding: 10px; border-bottom: 2px solid #222; }
-        td { padding: 12px; border-bottom: 1px solid #222; text-align: center; font-size: 0.9rem; }
-        .reset-btn { background: #ffa500; color: #000; border: none; padding: 6px 12px; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        .del-btn { background: #ff4757; color: #fff; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
-
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 3000; padding: 20px; overflow-y: auto; text-align: right; }
+        .admin-sec { background: #111; padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid #333; }
+        input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 8px; background: #000; color: #fff; border: 1px solid #444; }
+        .reset-btn { background: #ffa500; color: #000; border: none; padding: 5px 10px; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn-main { background: var(--neon-green); color: #000; border: none; padding: 12px 30px; border-radius: 25px; font-weight: bold; margin-top: 15px; cursor: pointer; }
     </style>
 </head>
-<body onclick="handleGlobalClick()">
+<body onclick="pepeJump()">
 
     <div class="top-controls">
         <button id="bgBtn" class="icon-btn" onclick="document.getElementById('bgInput').click(); event.stopPropagation();" style="display:none;">🖼️</button>
@@ -70,192 +52,201 @@
 
     <div class="brand-name">Random Quest</div>
 
-    <div id="questUI" style="display:none;">
-        <div class="challenge-card">
-            <div id="dailyTask">تحميل المهمة...</div>
-            <div id="dailyTaskEn">Fetching daily mission...</div>
-            <button class="btn-main" onclick="confirmDone()">DONE / تم ✅</button>
+    <div id="questUI" style="display:none; text-align:center;">
+        <div style="background:rgba(0,0,0,0.7); border:1px solid var(--neon-green); padding:25px; border-radius:20px; margin:20px;">
+            <div id="dailyTask" style="font-size:1.4rem; font-weight:bold;">جاري التحميل...</div>
+            <div id="dailyTaskEn" style="font-size:0.8rem; opacity:0.5; margin-top:10px;">Loading...</div>
         </div>
+        <button class="btn-main" onclick="handleDone()">تم الإنجاز ✅</button>
     </div>
 
     <div id="gameSection">
-        <div id="gameTabs">
+        <div style="display:flex; gap:15px; justify-content:center; margin-bottom:15px;">
             <button class="icon-btn" onclick="initMemory(); event.stopPropagation();">🧠</button>
             <button class="icon-btn" onclick="initPepe(); event.stopPropagation();">🐸</button>
             <button class="icon-btn" onclick="initBubbles(); event.stopPropagation();">🫧</button>
         </div>
         <div id="activeGameContainer"></div>
-        <div id="leaderboardMini" style="margin-top:10px; font-size:0.75rem; text-align:center; color:var(--neon-green);"></div>
+        <div id="leaderInfo" style="font-size:0.75rem; color:var(--neon-green); text-align:center; margin-top:10px;"></div>
     </div>
 
     <div class="progress-container">
-        <div id="progressText" style="font-size: 0.9rem; color: var(--neon-green); margin-bottom: 8px;">إنجازك: 0 / 30 🔥</div>
+        <div id="progressText" style="font-size:0.8rem; margin-bottom:5px;">إنجازك: 0 / 30 🔥</div>
         <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
-        <div id="timerDisplay" style="text-align:center; font-size:0.8rem; color:var(--pink); margin-top:10px; font-weight:bold;"></div>
+        <div id="nextTimer" style="font-size:0.7rem; color:var(--pink); margin-top:5px; text-align:center;"></div>
     </div>
 
     <div id="adminPanel" class="modal">
-        <button onclick="closeAdmin()" style="color:red; float:left; font-size:2.5rem; background:none; border:none; cursor:pointer;">&times;</button>
-        <h2 style="text-align:center; color:var(--neon-green); font-family:'Caveat', cursive; font-size:2.5rem;">إدارة زينب ⚖️</h2>
+        <button onclick="closeAdmin()" style="color:red; float:left; font-size:2rem; background:none; border:none; cursor:pointer;">×</button>
+        <h2 style="text-align:center; color:var(--neon-green);">لوحة الإدارة ⚖️</h2>
         
         <div class="admin-sec">
-            <h3 style="color:var(--neon-blue);">➕ إضافة تحدي جديد</h3>
-            <input type="text" id="addAr" placeholder="التحدي بالعربية">
+            <h3>➕ إضافة تحدي جديد</h3>
+            <input type="text" id="addAr" placeholder="التحدي بالعربي">
             <input type="text" id="addEn" placeholder="Challenge in English">
-            <button class="btn-main" onclick="submitTask()" style="margin-top:10px; padding:10px 30px;">حفظ في القاعدة</button>
+            <button class="btn-main" onclick="addTask()" style="margin-top:10px;">حفظ التحدي</button>
         </div>
 
         <div class="admin-sec">
-            <h3 style="color:var(--neon-blue);">📋 التحديات الحالية</h3>
-            <div id="tasksList" style="max-height:200px; overflow-y:auto;"></div>
-        </div>
-
-        <div class="admin-sec">
-            <h3 style="color:var(--neon-blue);">👥 قائمة الزوار والتحكم</h3>
-            <table>
+            <h3>👥 سجل الزوار (تصفير المستوى)</h3>
+            <table style="width:100%; text-align:center; font-size:0.8rem;">
                 <thead><tr><th>الاسم</th><th>التقدم</th><th>تصفير</th></tr></thead>
-                <tbody id="usersList"></tbody>
+                <tbody id="adminUsers"></tbody>
             </table>
+        </div>
+
+        <div class="admin-sec">
+            <h3>📋 قائمة التحديات الحالية</h3>
+            <div id="adminTasksList" style="max-height:150px; overflow-y:auto;"></div>
         </div>
     </div>
 
     <script>
         const FIREBASE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
-        const MY_ID = 8421694319;
         const userId = tg.initDataUnsafe.user?.id || 8421694319;
-        const userName = tg.initDataUnsafe.user?.first_name || "لاعب";
+        const userName = tg.initDataUnsafe.user?.first_name || "لاعب مجهول";
         
         firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
-        let loops = [], gameType = "";
+        let loops = [], currentGame = "";
 
-        if(userId == MY_ID) { document.getElementById('bgBtn').style.display='flex'; document.getElementById('adminBtn').style.display='flex'; }
+        if(userId == 8421694319) { document.getElementById('bgBtn').style.display='flex'; document.getElementById('adminBtn').style.display='flex'; }
 
-        function clearAll() {
-            gameType = "";
-            loops.forEach(clearInterval);
-            loops = [];
+        function cleanup() {
+            currentGame = ""; loops.forEach(clearInterval); loops = [];
             document.getElementById('activeGameContainer').innerHTML = "";
         }
 
-        // --- Pepe Jump Game ---
+        // --- PEPE JUMP: Fast & Accurate ---
         function initPepe() {
-            clearAll(); gameType = "pepe";
-            const stage = document.getElementById('activeGameContainer');
-            stage.innerHTML = `<div id="liveScore">0</div><div id="pepe">🐸</div>`;
+            cleanup(); currentGame = "pepe";
+            const container = document.getElementById('activeGameContainer');
+            container.innerHTML = `<div id="liveScore">0</div><div id="pepe">🐸</div>`;
             let score = 0;
             
-            function spawnObs() {
-                if(gameType !== "pepe") return;
+            function create() {
+                if(currentGame !== "pepe") return;
                 const obs = document.createElement('div');
                 obs.className = 'obstacle'; obs.innerHTML = "🌵";
-                stage.appendChild(obs);
-                let x = -50;
+                container.appendChild(obs);
+                let pos = -50;
                 let move = setInterval(() => {
-                    x += 6.5; obs.style.right = x + "px";
+                    pos += 7.5; // سرعة العوائق
+                    obs.style.right = pos + "px";
                     let pTop = document.getElementById('pepe').offsetTop;
-                    if(x > (stage.offsetWidth - 90) && x < (stage.offsetWidth - 40) && pTop > 195) {
-                        clearInterval(move); alert("خسرت! سكورك: " + score); initPepe();
+                    // Hitbox detection
+                    if(pos > (container.offsetWidth - 85) && pos < (container.offsetWidth - 35) && pTop > 190) {
+                        clearInterval(move); alert("خسرت! سكور: " + score); syncScore(score); initPepe();
                     }
-                    if(x > stage.offsetWidth) { clearInterval(move); obs.remove(); score++; document.getElementById('liveScore').innerText = score; updateBest(score); }
+                    if(pos > container.offsetWidth) { clearInterval(move); obs.remove(); score++; document.getElementById('liveScore').innerText = score; }
                 }, 20);
                 loops.push(move);
-                setTimeout(spawnObs, Math.random() * 1200 + 1000);
+                setTimeout(create, Math.random() * 1200 + 800);
             }
-            spawnObs();
+            create();
+            updateLeaderboard();
         }
 
-        function handleGlobalClick() {
-            if(gameType === "pepe") {
-                const p = document.getElementById('pepe');
-                if(p.style.bottom === "120px") return;
-                p.style.bottom = "120px";
-                setTimeout(() => p.style.bottom = "15px", 350);
-            }
+        function pepeJump() {
+            if(currentGame !== "pepe") return;
+            const p = document.getElementById('pepe');
+            if(p.style.bottom === "110px") return;
+            p.style.bottom = "110px";
+            setTimeout(() => p.style.bottom = "10px", 350);
         }
 
-        // --- Memory Game (16 Cards) ---
+        async function syncScore(s) {
+            const ref = db.ref(`rq_leaderboard/${userId}`);
+            const snap = await ref.once('value');
+            if(s > (snap.val()?.score || 0)) await ref.set({name: userName, score: s});
+        }
+
+        async function updateLeaderboard() {
+            const snap = await db.ref('rq_leaderboard').orderByChild('score').limitToLast(1).once('value');
+            snap.forEach(c => {
+                document.getElementById('leaderInfo').innerText = `المتصدر عالمياً: ${c.val().name} (سكور: ${c.val().score})`;
+            });
+        }
+
+        // --- MEMORY GAME: 16 Cards ---
         function initMemory() {
-            clearAll();
-            const stage = document.getElementById('activeGameContainer');
+            cleanup();
+            const container = document.getElementById('activeGameContainer');
             const grid = document.createElement('div'); grid.className = 'mem-grid';
-            const icons = ['⚖️','💎','🔥','🚀','🌙','👾','🍀','🎨'];
+            const icons = ['⚖️','📚','💻','💎','🔥','🚀','🌙','👾'];
             const cards = [...icons, ...icons].sort(() => Math.random() - 0.5);
             let flipped = [];
             cards.forEach(icon => {
                 const c = document.createElement('div'); c.className = 'card';
                 c.onclick = (e) => { e.stopPropagation();
                     if(flipped.length < 2 && !c.innerText) {
-                        c.innerText = icon; c.classList.add('flipped'); flipped.push(c);
+                        c.innerText = icon; flipped.push(c);
                         if(flipped.length === 2) {
-                            if(flipped[0].innerText === flipped[1].innerText) { flipped = []; }
-                            else { setTimeout(() => { flipped.forEach(x => {x.innerText = ""; x.classList.remove('flipped');}); flipped = []; }, 600); }
+                            if(flipped[0].innerText === flipped[1].innerText) flipped = [];
+                            else setTimeout(() => { flipped.forEach(x => x.innerText = ""); flipped = []; }, 500);
                         }
                     }
                 };
                 grid.appendChild(c);
             });
-            stage.appendChild(grid);
+            container.appendChild(grid);
         }
 
-        // --- Bubbles Game ---
+        // --- BUBBLES GAME ---
         function initBubbles() {
-            clearAll();
-            const stage = document.getElementById('activeGameContainer');
+            cleanup();
+            const container = document.getElementById('activeGameContainer');
             let bLoop = setInterval(() => {
                 const b = document.createElement('div');
-                b.style = `position:absolute; left:${Math.random()*85}%; top:${Math.random()*85}%; font-size:2.2rem; cursor:pointer; filter:drop-shadow(0 0 5px var(--neon-blue));`;
+                b.style = `position:absolute; left:${Math.random()*80}%; top:${Math.random()*80}%; font-size:2rem; cursor:pointer;`;
                 b.innerHTML = "🫧";
                 b.onclick = (e) => { e.stopPropagation(); b.remove(); };
-                stage.appendChild(b);
+                container.appendChild(b);
                 setTimeout(() => b.remove(), 1100);
-            }, 650);
+            }, 600);
             loops.push(bLoop);
         }
 
-        // --- Admin Core ---
+        // --- ADMIN FUNCTIONS: Full Logic ---
         async function openAdmin() {
-            document.getElementById('adminPanel').style.display = 'block';
-            db.ref('rq_challenges').on('value', snap => {
-                const list = document.getElementById('tasksList'); list.innerHTML = "";
-                snap.forEach(t => {
-                    list.innerHTML += `<div style="display:flex;justify-content:space-between;padding:10px;border-bottom:1px solid #222;">
-                        <span>${t.val().ar}</span><button class="del-btn" onclick="removeTask('${t.key}')">حذف</button></div>`;
-                });
-            });
+            document.getElementById('adminPanel').style.display='block';
             db.ref('rq_users').on('value', snap => {
-                const body = document.getElementById('usersList'); body.innerHTML = "";
+                const body = document.getElementById('adminUsers'); body.innerHTML = "";
                 snap.forEach(u => {
                     const d = u.val();
-                    body.innerHTML += `<tr><td>${d.info?.name || 'زائر'}</td><td>${Object.keys(d.history || {}).length} / 30</td>
+                    body.innerHTML += `<tr><td>${d.info?.name || 'مجهول'}</td><td>${Object.keys(d.history || {}).length}/30</td>
                         <td><button class="reset-btn" onclick="resetUser('${u.key}')">تصفير</button></td></tr>`;
                 });
             });
+            db.ref('rq_challenges').on('value', snap => {
+                const list = document.getElementById('adminTasksList'); list.innerHTML = "";
+                snap.forEach(t => {
+                    list.innerHTML += `<div style="display:flex;justify-content:space-between;padding:8px;border-bottom:1px solid #222;">
+                        <span>${t.val().ar}</span><button onclick="delTask('${t.key}')" style="color:red;background:none;border:none;cursor:pointer;">×</button></div>`;
+                });
+            });
         }
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
-        async function submitTask() {
+        function closeAdmin() { document.getElementById('adminPanel').style.display='none'; }
+        async function addTask() {
             const ar = document.getElementById('addAr').value, en = document.getElementById('addEn').value;
             if(ar && en) { await db.ref('rq_challenges').push({ar, en}); document.getElementById('addAr').value=""; document.getElementById('addEn').value=""; }
         }
-        async function removeTask(key) { if(confirm("حذف المهمة؟")) await db.ref(`rq_challenges/${key}`).remove(); }
-        async function resetUser(key) { if(confirm("تصفير تقدم المستخدم نهائياً؟")) await db.ref(`rq_users/${key}/history`).remove(); }
+        async function delTask(k) { if(confirm("حذف؟")) await db.ref(`rq_challenges/${k}`).remove(); }
+        async function resetUser(k) { if(confirm("تصفير مستوى المستخدم؟")) await db.ref(`rq_users/${k}/history`).remove(); }
 
-        // --- Background Logic ---
+        // --- Background & Init ---
         function uploadBG(i) {
-            const reader = new FileReader();
-            reader.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; localStorage.setItem('user_bg', e.target.result); };
-            reader.readAsDataURL(i.files[0]);
+            const r = new FileReader(); r.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; localStorage.setItem('userbg', e.target.result); };
+            r.readAsDataURL(i.files[0]);
         }
-        if(localStorage.getItem('user_bg')) document.body.style.backgroundImage = `url(${localStorage.getItem('user_bg')})`;
+        if(localStorage.getItem('userbg')) document.body.style.backgroundImage = `url(${localStorage.getItem('userbg')})`;
 
-        // --- Core App Flow ---
-        async function loadApp() {
+        async function init() {
             const today = new Date().toISOString().split('T')[0];
             const snap = await db.ref(`rq_users/${userId}`).once('value');
             const history = snap.val()?.history || {};
             const count = Object.keys(history).length;
-            
             document.getElementById('progressFill').style.width = (Math.min(count, 30)/30*100) + "%";
             document.getElementById('progressText').innerText = `إنجازك: ${count} / 30 🔥`;
 
@@ -263,22 +254,21 @@
                 document.getElementById('gameSection').style.display = 'block';
                 startTimer(history[today].time);
             } else {
-                const tasksSnap = await db.ref('rq_challenges').once('value');
-                let tasks = []; tasksSnap.forEach(t => tasks.push(t.val()));
-                let chosen = tasks[Math.floor(Math.random()*tasks.length)] || {ar: "قم بـ 15 دقيقة رياضة!", en: "Do 15 mins of exercise!"};
+                const tasks = await db.ref('rq_challenges').once('value');
+                let arr = []; tasks.forEach(t => arr.push(t.val()));
+                let chosen = arr[Math.floor(Math.random()*arr.length)] || {ar: "قم بتمارين ضغط!", en: "Do pushups!"};
                 document.getElementById('dailyTask').innerText = chosen.ar;
                 document.getElementById('dailyTaskEn').innerText = chosen.en;
                 document.getElementById('questUI').style.display = 'block';
             }
         }
 
-        async function confirmDone() {
+        async function handleDone() {
             const today = new Date().toISOString().split('T')[0];
-            const now = Date.now();
-            await db.ref(`rq_users/${userId}/history/${today}`).set({done: true, time: now});
-            await db.ref(`rq_users/${userId}/info`).update({name: userName, lastSeen: now});
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            setTimeout(() => location.reload(), 1500);
+            const time = Date.now();
+            await db.ref(`rq_users/${userId}/history/${today}`).set({done: true, time: time});
+            await db.ref(`rq_users/${userId}/info`).update({name: userName, lastSeen: time});
+            confetti(); setTimeout(() => location.reload(), 1000);
         }
 
         function startTimer(doneTime) {
@@ -288,11 +278,11 @@
                 const h = Math.floor(diff/36e5).toString().padStart(2,'0');
                 const m = Math.floor((diff%36e5)/6e4).toString().padStart(2,'0');
                 const s = Math.floor((diff%6e4)/1000).toString().padStart(2,'0');
-                document.getElementById('timerDisplay').innerText = `التحدي القادم: ${h}:${m}:${s}`;
+                document.getElementById('nextTimer').innerText = `التحدي القادم: ${h}:${m}:${s}`;
             }, 1000);
         }
 
-        loadApp();
+        init();
     </script>
 </body>
 </html>
