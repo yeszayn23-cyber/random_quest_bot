@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Random Quest - Neon 2048 Edition 👑</title>
+    <title>Random Quest - The Queen's Edition 👑</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -18,75 +18,294 @@
             --pink: #ff75c3;
             --bg-dark: #050510;
             --glass: rgba(255, 255, 255, 0.05);
+            --border-glow: 0 0 15px rgba(57, 255, 20, 0.3);
         }
 
+        /* الأساسيات */
         body {
             font-family: 'Montserrat', 'Tajawal', sans-serif;
-            margin: 0; padding: 0; height: 100vh;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
             background: var(--bg-dark) no-repeat center center/cover;
-            color: white; overflow: hidden;
-            display: flex; flex-direction: column; align-items: center;
-            user-select: none; -webkit-tap-highlight-color: transparent;
+            color: white;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        .header { width: 100%; padding: 20px 0; text-align: center; }
+        /* الهيدر والتحكم */
+        .header {
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            position: relative;
+        }
+
         .brand-name {
-            font-size: 2.6rem; font-weight: 900; text-transform: uppercase;
+            font-size: 2.6rem;
+            font-weight: 900;
+            text-transform: uppercase;
             background: linear-gradient(45deg, var(--neon-green), var(--neon-blue), var(--pink));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 12px var(--neon-green));
             animation: flow 3s linear infinite;
         }
-        @keyframes flow { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }
 
-        .top-controls { position: absolute; top: 20px; width: 90%; left: 5%; display: flex; justify-content: space-between; z-index: 2000; }
-        .icon-btn {
-            background: var(--glass); border: 1px solid rgba(57, 255, 20, 0.3);
-            color: white; border-radius: 50%; width: 50px; height: 50px;
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; backdrop-filter: blur(10px); transition: 0.3s;
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+        @keyframes flow {
+            0% { filter: hue-rotate(0deg); }
+            100% { filter: hue-rotate(360deg); }
         }
 
-        #gameSection { display: none; width: 94%; margin-top: 10px; flex: 1; display: flex; flex-direction: column; }
-        .game-tabs { display: flex; gap: 12px; justify-content: center; margin-bottom: 15px; }
+        .top-controls {
+            position: absolute;
+            top: 20px;
+            width: 90%;
+            left: 5%;
+            display: flex;
+            justify-content: space-between;
+            z-index: 2000;
+        }
+
+        .icon-btn {
+            background: var(--glass);
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            backdrop-filter: blur(10px);
+            transition: 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: var(--border-glow);
+        }
+
+        .icon-btn:active { transform: scale(0.8); }
+
+        /* منطقة الألعاب - Game Container */
+        #gameSection {
+            display: none;
+            width: 94%;
+            margin-top: 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-tabs {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
 
         #activeGameDisplay {
-            background: rgba(0, 0, 0, 0.9); border: 2px solid var(--neon-green);
-            border-radius: 30px; height: 320px; position: relative; overflow: hidden;
-            box-shadow: inset 0 0 30px rgba(57, 255, 20, 0.2);
-            display: flex; justify-content: center; align-items: center;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid var(--neon-green);
+            border-radius: 30px;
+            height: 320px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(57, 255, 20, 0.2), 0 0 20px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* 2048 Styling */
+        /* 2048 Game Styles */
         .grid-2048 {
-            display: grid; grid-template-columns: repeat(4, 1fr);
-            gap: 8px; background: #111; padding: 10px; border-radius: 10px;
-            width: 260px; height: 260px;
-        }
-        .cell-2048 {
-            background: rgba(255,255,255,0.05); border-radius: 5px;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 1.2rem; font-weight: bold; transition: 0.1s;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px;
+            border-radius: 12px;
         }
 
-        /* Quest & Progress */
-        #questSection { display: none; width: 85%; text-align: center; padding: 40px 20px; }
-        .quest-card { background: rgba(0, 0, 0, 0.85); border: 2px solid var(--neon-green); padding: 30px; border-radius: 35px; }
-        .progress-wrapper { width: 85%; margin: 20px 0 40px; }
-        .bar-container { height: 12px; background: rgba(255,255,255,0.05); border-radius: 20px; overflow: hidden; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); width: 0%; transition: 1.5s; }
+        .tile-2048 {
+            width: 55px;
+            height: 55px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.15s ease-out;
+        }
 
-        /* Admin */
-        .admin-panel { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; padding: 30px; overflow-y: scroll; }
-        .admin-card { background: #0f0f1f; border-radius: 20px; padding: 20px; margin-bottom: 20px; border: 1px solid #222; }
-        .user-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #222; }
-        .reset-badge { background: #ff4757; color: white; padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; cursor: pointer; }
-        input { width: 100%; padding: 12px; background: #000; border: 1px solid #444; color: white; border-radius: 12px; margin: 10px 0; }
-        .btn-action { background: var(--neon-green); color: black; padding: 12px 25px; border-radius: 12px; font-weight: bold; border: none; width: 100%; }
+        .score-box {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-family: monospace;
+            font-size: 1.4rem;
+            color: var(--neon-green);
+            text-shadow: 0 0 5px var(--neon-green);
+        }
+
+        /* Memory Grid */
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            padding: 15px;
+            height: 100%;
+            width: 100%;
+        }
+
+        .mem-card {
+            background: #0a0a1a;
+            border: 1px solid var(--neon-blue);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .mem-card.flipped {
+            background: #1a1a2e;
+            border-color: var(--neon-green);
+            transform: rotateY(180deg);
+        }
+
+        /* UI التحديات */
+        #questSection {
+            display: none;
+            width: 85%;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .quest-card {
+            background: rgba(0, 0, 0, 0.85);
+            border: 2px solid var(--neon-green);
+            padding: 30px;
+            border-radius: 35px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .quest-card::before {
+            content: "DAILY MISSION";
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--neon-green);
+            color: black;
+            padding: 2px 15px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+
+        /* شريط التقدم */
+        .progress-wrapper {
+            width: 85%;
+            margin: 20px 0 40px;
+        }
+
+        .bar-container {
+            height: 12px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
+            width: 0%;
+            transition: 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+            box-shadow: 0 0 15px var(--neon-green);
+        }
+
+        /* لوحة الإدارة الضخمة */
+        .admin-panel {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.98);
+            z-index: 9999;
+            padding: 30px;
+            overflow-y: scroll;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .admin-card {
+            background: #0f0f1f;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid #222;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #000;
+            border: 1px solid #444;
+            color: white;
+            border-radius: 12px;
+            margin: 10px 0;
+            box-sizing: border-box;
+        }
+
+        .btn-action {
+            background: var(--neon-green);
+            color: black;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .user-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid #222;
+        }
+
+        .reset-badge {
+            background: #ff9f43;
+            color: black;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
     </style>
 </head>
-<body>
+<body onclick="handleGlobalJump()">
 
     <div class="top-controls">
         <button id="bgBtn" class="icon-btn" onclick="document.getElementById('bgInput').click(); event.stopPropagation();" style="display:none;">🖼️</button>
@@ -94,24 +313,26 @@
     </div>
     <input type="file" id="bgInput" hidden onchange="processBG(this)">
 
-    <div class="header"><div class="brand-name">Random Quest</div></div>
+    <div class="header">
+        <div class="brand-name">Random Quest</div>
+    </div>
 
     <div id="questSection">
         <div class="quest-card">
-            <h2 id="taskAr">جاري جلب التحدي...</h2>
-            <p id="taskEn" style="opacity: 0.5;">...</p>
+            <h2 id="taskAr" style="margin: 0; font-size: 1.6rem;">جاري جلب التحدي...</h2>
+            <p id="taskEn" style="opacity: 0.5; font-size: 0.9rem; margin-top: 10px;">...</p>
             <button class="btn-action" style="margin-top: 25px;" onclick="markAsDone()">DONE / تم ✅</button>
         </div>
     </div>
 
     <div id="gameSection">
         <div class="game-tabs">
-            <button class="icon-btn" onclick="startMemory();">🧠</button>
-            <button class="icon-btn" onclick="start2048();">🔢</button>
-            <button class="icon-btn" onclick="startReflex();">🎯</button>
+            <button class="icon-btn" onclick="startMemory(); event.stopPropagation();">🧠</button>
+            <button class="icon-btn" onclick="start2048(); event.stopPropagation();">🔢</button>
+            <button class="icon-btn" onclick="startBubbles(); event.stopPropagation();">🫧</button>
         </div>
         <div id="activeGameDisplay"></div>
-        <div id="leaderboardNotice" style="width:100%; margin-top:10px;"></div>
+        <div id="leaderboardNotice" style="text-align: center; font-size: 0.7rem; color: var(--neon-blue); margin-top: 10px;"></div>
     </div>
 
     <div class="progress-wrapper">
@@ -119,29 +340,38 @@
             <span id="progressText" style="font-size: 0.8rem;">المستوى: 0 / 30</span>
             <span id="streakText" style="font-size: 0.8rem; color: var(--pink);">🔥 0 أيام</span>
         </div>
-        <div class="bar-container"><div id="progressBar" class="bar-fill"></div></div>
-        <div id="countdown" style="text-align: center; font-size: 0.8rem; margin-top: 10px; color: var(--neon-green);"></div>
+        <div class="bar-container">
+            <div id="progressBar" class="bar-fill"></div>
+        </div>
+        <div id="countdown" style="text-align: center; font-size: 0.8rem; margin-top: 10px; color: var(--neon-green); font-weight: bold;"></div>
     </div>
 
     <div id="adminPanel" class="admin-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h1 style="color: var(--neon-green);">إدارة زينب 👑</h1>
+        <div class="admin-header">
+            <h1 style="color: var(--neon-green); margin:0;">إدارة زينب 👑</h1>
             <button onclick="closeAdmin()" style="background:none; border:none; color:red; font-size:2rem;">&times;</button>
         </div>
+
         <div class="admin-card">
-            <h3>👥 إدارة المستخدمين (تصفير)</h3>
+            <h3 style="margin-top:0;">➕ إضافة تحدي جديد</h3>
+            <input type="text" id="newAr" placeholder="التحدي بالعربية (مثلاً: 20 ضغط)">
+            <input type="text" id="newEn" placeholder="Challenge in English">
+            <button class="btn-action" onclick="saveTask()">إضافة للقاعدة</button>
+        </div>
+
+        <div class="admin-card">
+            <h3 style="margin-top:0;">👥 إدارة المستخدمين (تصفير)</h3>
             <div id="userManagerList"></div>
         </div>
+
         <div class="admin-card">
-            <h3>➕ تحدي جديد</h3>
-            <input type="text" id="newAr" placeholder="بالعربية">
-            <input type="text" id="newEn" placeholder="English">
-            <button class="btn-action" onclick="saveTask()">إضافة</button>
+            <h3 style="margin-top:0;">📜 التحديات المتوفرة</h3>
+            <div id="tasksManagerList"></div>
         </div>
-        <div id="tasksManagerList"></div>
     </div>
 
     <script>
+        // --- الإعدادات الفنية ---
         const DB_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
         const myID = 8421694319;
@@ -149,177 +379,341 @@
         
         firebase.initializeApp({ databaseURL: DB_URL });
         const db = firebase.database();
-        let gameActive = "", gridData = [];
+        let gameActive = "", gameLoops = [];
 
+        // إظهار أزرار الإدارة لزينب فقط
         if(user.id == myID) {
             document.getElementById('bgBtn').style.display = 'flex';
             document.getElementById('adminBtn').style.display = 'flex';
         }
 
-        function stopAll() { gameActive = ""; document.getElementById('activeGameDisplay').innerHTML = ""; }
+        // تنظيف الألعاب
+        function stopAll() {
+            gameActive = "";
+            gameLoops.forEach(clearInterval);
+            gameLoops = [];
+            document.getElementById('activeGameDisplay').innerHTML = "";
+            window.onkeydown = null; // تنظيف أحداث الكيبورد
+        }
 
-        // --- 1. لعبة 2048 نيون الجديدة ---
-        const neonColors = {
-            2: '#00ffff', 4: '#39ff14', 8: '#ff75c3', 16: '#ffff00', 
-            32: '#ff4500', 64: '#8a2be2', 128: '#00fa9a', 256: '#ff00ff',
-            512: '#1e90ff', 1024: '#adff2f', 2048: '#ffffff'
-        };
+        // --- 1. لعبة 2048 ---
+        let board2048 = [];
+        let score2048 = 0;
 
         function start2048() {
-            stopAll(); gameActive = "2048";
-            const stage = document.getElementById('activeGameDisplay');
-            stage.innerHTML = `<div class="score-box" id="s2048">Score: 0</div><div class="grid-2048" id="g2048"></div>`;
-            gridData = Array(16).fill(0);
-            addTile(); addTile();
-            draw2048();
-            window.onkeydown = (e) => handle2048Input(e.key);
-            // دعم السحب للموبايل
-            let ts; stage.ontouchstart = e => ts = e.touches[0];
-            stage.ontouchend = e => {
-                let te = e.changedTouches[0];
-                let dx = te.clientX - ts.clientX, dy = te.clientY - ts.clientY;
-                if(Math.abs(dx) > Math.abs(dy)) handle2048Input(dx > 0 ? 'ArrowRight' : 'ArrowLeft');
-                else handle2048Input(dy > 0 ? 'ArrowDown' : 'ArrowUp');
-            };
-        }
-
-        function draw2048() {
-            const g = document.getElementById('g2048'); g.innerHTML = "";
-            gridData.forEach(v => {
-                let c = document.createElement('div'); c.className = 'cell-2048';
-                if(v > 0) {
-                    c.innerText = v; c.style.boxShadow = `inset 0 0 10px ${neonColors[v]}`;
-                    c.style.color = neonColors[v]; c.style.border = `1px solid ${neonColors[v]}`;
-                }
-                g.appendChild(c);
-            });
-        }
-
-        function addTile() {
-            let empty = gridData.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
-            if(empty.length) gridData[empty[Math.floor(Math.random()*empty.length)]] = Math.random() < 0.9 ? 2 : 4;
-        }
-
-        function handle2048Input(key) {
-            if(gameActive !== "2048") return;
-            let old = JSON.stringify(gridData);
-            // منطق الحركة (تبسيط)
-            if(key.includes('Left')) move2048(0, 1, 2, 3);
-            if(key.includes('Right')) move2048(3, 2, 1, 0);
-            if(key.includes('Up')) move2048(0, 4, 8, 12);
-            if(key.includes('Down')) move2048(12, 8, 4, 0);
+            stopAll();
+            gameActive = "2048";
+            score2048 = 0;
+            board2048 = Array(16).fill(0);
             
-            if(old !== JSON.stringify(gridData)) { addTile(); draw2048(); update2048Score(); }
+            const stage = document.getElementById('activeGameDisplay');
+            stage.innerHTML = `
+                <div class="score-box" id="s2048">Score: 0</div>
+                <div class="grid-2048" id="grid2048"></div>
+                <div style="font-size:0.7rem; color:var(--pink); margin-top:5px;">Swipe or use Arrows to merge!</div>
+            `;
+            
+            addRandomTile();
+            addRandomTile();
+            updateBoardUI();
+            getTopScore();
+
+            // أحداث الكيبورد
+            window.onkeydown = (e) => {
+                if(gameActive !== "2048") return;
+                let moved = false;
+                if(e.key === "ArrowUp") moved = move2048('up');
+                if(e.key === "ArrowDown") moved = move2048('down');
+                if(e.key === "ArrowLeft") moved = move2048('left');
+                if(e.key === "ArrowRight") moved = move2048('right');
+                
+                if(moved) {
+                    addRandomTile();
+                    updateBoardUI();
+                    if(isGameOver()) {
+                        alert("انتهت اللعبة! مجموع نقاطك: " + score2048);
+                        saveHighScore(score2048);
+                    }
+                }
+            };
+
+            // دعم السحب (Touch Swipe) للموبايل
+            let touchStartX, touchStartY;
+            stage.addEventListener('touchstart', (e) => {
+                touchStartX = e.touches[0].clientX;
+                touchStartY = e.touches[0].clientY;
+            }, {passive: true});
+
+            stage.addEventListener('touchend', (e) => {
+                if(gameActive !== "2048") return;
+                let dx = e.changedTouches[0].clientX - touchStartX;
+                let dy = e.changedTouches[0].clientY - touchStartY;
+                let moved = false;
+                if(Math.abs(dx) > Math.abs(dy)) {
+                    if(dx > 30) moved = move2048('right');
+                    else if(dx < -30) moved = move2048('left');
+                } else {
+                    if(dy > 30) moved = move2048('down');
+                    else if(dy < -30) moved = move2048('up');
+                }
+                if(moved) { addRandomTile(); updateBoardUI(); }
+            }, {passive: true});
         }
 
-        function move2048(...indices) {
-            for(let i=0; i<4; i++) {
-                let rowIdx = indices.map(x => x + (indices[1]-indices[0] === 1 ? i*4 : i));
-                if(indices[1]-indices[0] !== 1 && indices[1]-indices[0] !== -1) rowIdx = indices.map(x => x + i);
-                let row = rowIdx.map(idx => gridData[idx]).filter(v => v !== 0);
-                for(let j=0; j<row.length-1; j++) if(row[j] === row[j+1]) { row[j]*=2; row.splice(j+1, 1); }
-                while(row.length < 4) row.push(0);
-                rowIdx.forEach((idx, j) => gridData[idx] = row[j]);
+        function addRandomTile() {
+            let empty = board2048.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
+            if(empty.length) {
+                board2048[empty[Math.floor(Math.random() * empty.length)]] = Math.random() < 0.9 ? 2 : 4;
             }
         }
 
-        function update2048Score() {
-            let s = gridData.reduce((a, b) => a + b, 0);
-            document.getElementById('s2048').innerText = "Score: " + s;
-            saveHighScore(s);
+        function updateBoardUI() {
+            const grid = document.getElementById('grid2048');
+            const colors = {
+                2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563',
+                32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61',
+                512: '#edc850', 1024: '#edc53f', 2048: '#39ff14'
+            };
+            grid.innerHTML = board2048.map(val => `
+                <div class="tile-2048" style="background:${val ? colors[val] || '#3c3a32' : 'rgba(255,255,255,0.05)'}; 
+                color:${val <= 4 ? '#776e65' : 'white'}; 
+                box-shadow: ${val ? '0 0 10px '+colors[val] : 'none'}">
+                    ${val || ''}
+                </div>
+            `).join('');
+            document.getElementById('s2048').innerText = "Score: " + score2048;
         }
 
-        // --- 2. الإدارة والتصفير ---
+        function move2048(dir) {
+            let moved = false;
+            let size = 4;
+            
+            const get = (r, c) => board2048[r * size + c];
+            const set = (r, c, v) => board2048[r * size + c] = v;
+
+            for (let i = 0; i < size; i++) {
+                let line = [];
+                for (let j = 0; j < size; j++) {
+                    let v = (dir==='up'||dir==='down') ? get(j, i) : get(i, j);
+                    if(v) line.push(v);
+                }
+                if(dir==='down'||dir==='right') line.reverse();
+                
+                let newLine = [];
+                for (let j = 0; j < line.length; j++) {
+                    if(line[j] === line[j+1]) {
+                        newLine.push(line[j] * 2);
+                        score2048 += line[j] * 2;
+                        j++;
+                        moved = true;
+                    } else {
+                        newLine.push(line[j]);
+                    }
+                }
+                while(newLine.length < size) newLine.push(0);
+                if(dir==='down'||dir==='right') newLine.reverse();
+
+                for (let j = 0; j < size; j++) {
+                    let oldV = (dir==='up'||dir==='down') ? get(j, i) : get(i, j);
+                    let newV = newLine[j];
+                    if(oldV !== newV) moved = true;
+                    if(dir==='up'||dir==='down') set(j, i, newV); else set(i, j, newV);
+                }
+            }
+            return moved;
+        }
+
+        function isGameOver() {
+            if(board2048.includes(0)) return false;
+            for(let i=0; i<16; i++) {
+                if(i%4<3 && board2048[i] === board2048[i+1]) return false;
+                if(i<12 && board2048[i] === board2048[i+4]) return false;
+            }
+            return true;
+        }
+
+        function handleGlobalJump() {
+            // فارغ لأن لعبة 2048 لا تستخدم القفز
+        }
+
+        async function saveHighScore(s) {
+            const ref = db.ref(`rq_scores/${user.id}`);
+            const current = await ref.once('value');
+            if(s > (current.val()?.score || 0)) {
+                await ref.set({ name: user.first_name, score: s });
+            }
+        }
+
+        async function getTopScore() {
+            const snap = await db.ref('rq_scores').orderByChild('score').limitToLast(1).once('value');
+            snap.forEach(d => {
+                document.getElementById('leaderboardNotice').innerText = `المتصدر الحالي: ${d.val().name} (${d.val().score} نقطة)`;
+            });
+        }
+
+        // --- 2. لعبة الذاكرة (16 بطاقة) ---
+        function startMemory() {
+            stopAll();
+            const stage = document.getElementById('activeGameDisplay');
+            const grid = document.createElement('div'); grid.className = 'memory-grid';
+            const icons = ['⚖️','📚','💻','💎','🔥','🚀','🌙','👾'];
+            const deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
+            let flipped = [];
+
+            deck.forEach(icon => {
+                const c = document.createElement('div');
+                c.className = 'mem-card';
+                c.onclick = (e) => {
+                    e.stopPropagation();
+                    if(flipped.length < 2 && !c.innerText) {
+                        c.innerText = icon; c.classList.add('flipped');
+                        flipped.push(c);
+                        if(flipped.length === 2) {
+                            if(flipped[0].innerText === flipped[1].innerText) {
+                                flipped = [];
+                            } else {
+                                setTimeout(() => {
+                                    flipped.forEach(f => { f.innerText = ""; f.classList.remove('flipped'); });
+                                    flipped = [];
+                                }, 600);
+                            }
+                        }
+                    }
+                };
+                grid.appendChild(c);
+            });
+            stage.appendChild(grid);
+        }
+
+        // --- 3. لعبة الفقاعات ---
+        function startBubbles() {
+            stopAll();
+            const stage = document.getElementById('activeGameDisplay');
+            let loop = setInterval(() => {
+                const b = document.createElement('div');
+                b.innerHTML = "🫧";
+                b.style = `position:absolute; left:${Math.random()*85}%; top:${Math.random()*85}%; font-size:2.2rem; cursor:pointer; filter:drop-shadow(0 0 5px var(--neon-blue));`;
+                b.onclick = (e) => { e.stopPropagation(); b.remove(); };
+                stage.appendChild(b);
+                setTimeout(() => b.remove(), 1200);
+            }, 700);
+            gameLoops.push(loop);
+        }
+
+        // --- إدارة النظام (ADMIN) ---
         async function openAdmin() {
             document.getElementById('adminPanel').style.display = 'block';
+            
+            // جلب المستخدمين للتصفير
             db.ref('rq_users').on('value', snap => {
                 const list = document.getElementById('userManagerList');
                 list.innerHTML = "";
                 snap.forEach(u => {
                     const d = u.val();
-                    const count = d.history ? Object.keys(d.history).length : 0;
-                    list.innerHTML += `<div class="user-row">
-                        <span>${d.info?.name || 'مجهول'} (${count}/30)</span>
-                        <span class="reset-badge" onclick="resetUser('${u.key}')">تصفير السجل</span>
-                    </div>`;
+                    const histCount = d.history ? Object.keys(d.history).length : 0;
+                    list.innerHTML += `
+                        <div class="user-row">
+                            <span>${d.info?.name || 'مجهول'} (${histCount}/30)</span>
+                            <span class="reset-badge" onclick="resetUserLevel('${u.key}')">تصفير المستوى</span>
+                        </div>`;
+                });
+            });
+
+            // جلب التحديات للحذف
+            db.ref('rq_challenges').on('value', snap => {
+                const list = document.getElementById('tasksManagerList');
+                list.innerHTML = "";
+                snap.forEach(t => {
+                    list.innerHTML += `
+                        <div class="user-row">
+                            <span>${t.val().ar}</span>
+                            <button onclick="delTask('${t.key}')" style="background:none; border:none; color:red;">حذف</button>
+                        </div>`;
                 });
             });
         }
 
-        async function resetUser(id) {
-            if(confirm("هل تريد تصفير تقدم هذا المستخدم؟")) {
-                await db.ref(`rq_users/${id}/history`).remove();
-                alert("تم التصفير!");
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+
+        async function saveTask() {
+            const ar = document.getElementById('newAr').value;
+            const en = document.getElementById('newEn').value;
+            if(ar && en) {
+                await db.ref('rq_challenges').push({ ar, en });
+                document.getElementById('newAr').value = "";
+                document.getElementById('newEn').value = "";
             }
         }
 
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+        async function delTask(id) { if(confirm("حذف هذا التحدي؟")) await db.ref(`rq_challenges/${id}`).remove(); }
 
-        // --- 3. بقية النظام ---
+        async function resetUserLevel(id) {
+            if(confirm("هل أنتِ متأكدة من تصفير مستوى هذا المستخدم نهائياً؟")) {
+                await db.ref(`rq_users/${id}/history`).remove();
+                alert("تم التصفير بنجاح");
+            }
+        }
+
+        // --- الخلفية ---
+        function processBG(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.body.style.backgroundImage = `url(${e.target.result})`;
+                localStorage.setItem('custom_bg', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+        if(localStorage.getItem('custom_bg')) document.body.style.backgroundImage = `url(${localStorage.getItem('custom_bg')})`;
+
+        // --- تهيئة التطبيق ---
         async function initApp() {
             const today = new Date().toISOString().split('T')[0];
-            const userSnap = await db.ref(`rq_users/${user.id}`).once('value');
-            const history = userSnap.val()?.history || {};
+            const snap = await db.ref(`rq_users/${user.id}`).once('value');
+            const data = snap.val() || {};
+            const history = data.history || {};
             const count = Object.keys(history).length;
 
+            // تحديث شريط التقدم
             document.getElementById('progressBar').style.width = (Math.min(count, 30) / 30 * 100) + "%";
             document.getElementById('progressText').innerText = `المستوى: ${count} / 30`;
 
             if(history[today]) {
+                // المستخدم أكمل التحدي
                 document.getElementById('gameSection').style.display = 'block';
                 document.getElementById('questSection').style.display = 'none';
-                renderLeaderboard();
                 startCountdown(history[today].time);
             } else {
+                // جلب تحدي عشوائي
                 const tSnap = await db.ref('rq_challenges').once('value');
-                let tasks = []; tSnap.forEach(t => tasks.push({id: t.key, ...t.val()}));
-                const completed = Object.values(history).map(h => h.taskId);
-                const available = tasks.filter(t => !completed.includes(t.id));
-                const final = available.length ? available[Math.floor(Math.random()*available.length)] : tasks[0];
-                document.getElementById('taskAr').innerText = final.ar;
-                document.getElementById('taskEn').innerText = final.en;
-                document.getElementById('taskAr').dataset.id = final.id;
+                let tasks = [];
+                tSnap.forEach(t => tasks.push(t.val()));
+                let finalTask = tasks[Math.floor(Math.random() * tasks.length)] || { ar: "قم بتمارين ضغط!", en: "Do some pushups!" };
+                document.getElementById('taskAr').innerText = finalTask.ar;
+                document.getElementById('taskEn').innerText = finalTask.en;
                 document.getElementById('questSection').style.display = 'block';
             }
         }
 
         async function markAsDone() {
             const today = new Date().toISOString().split('T')[0];
-            const taskId = document.getElementById('taskAr').dataset.id;
             const now = Date.now();
-            await db.ref(`rq_users/${user.id}/history/${today}`).set({ done: true, time: now, taskId });
+            await db.ref(`rq_users/${user.id}/history/${today}`).set({ done: true, time: now });
             await db.ref(`rq_users/${user.id}/info`).update({ name: user.first_name, lastSeen: now });
-            confetti({ particleCount: 150 }); setTimeout(() => location.reload(), 1500);
+            
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            setTimeout(() => location.reload(), 1500);
         }
 
-        async function saveHighScore(s) {
-            const ref = db.ref(`rq_scores/${user.id}`);
-            const cur = await ref.once('value');
-            if(s > (cur.val()?.score || 0)) await ref.set({ name: user.first_name, score: s });
-        }
-
-        async function renderLeaderboard() {
-            const snap = await db.ref('rq_scores').orderByChild('score').limitToLast(5).once('value');
-            let html = `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:15px;"><h4 style="margin:0; color:var(--pink); text-align:center;">🏆 أساطير النيون</h4>`;
-            let ranks = []; snap.forEach(d => ranks.unshift(d.val()));
-            ranks.forEach((r, i) => html += `<div class="user-row" style="border:0; font-size:0.8rem;"><span>${i+1}. ${r.name}</span><span style="color:var(--neon-green)">${r.score}</span></div>`);
-            document.getElementById('leaderboardNotice').innerHTML = html + "</div>";
-        }
-
-        function startCountdown(time) {
+        function startCountdown(startTime) {
             setInterval(() => {
-                const rem = (time + 86400000) - Date.now();
-                if(rem <= 0) location.reload();
-                const h = Math.floor(rem/36e5).toString().padStart(2,'0'), m = Math.floor((rem%36e5)/6e4).toString().padStart(2,'0'), s = Math.floor((rem%6e4)/1000).toString().padStart(2,'0');
+                const remaining = (startTime + 86400000) - Date.now();
+                if(remaining <= 0) location.reload();
+                const h = Math.floor(remaining/36e5).toString().padStart(2,'0');
+                const m = Math.floor((remaining%36e5)/6e4).toString().padStart(2,'0');
+                const s = Math.floor((remaining%6e4)/1000).toString().padStart(2,'0');
                 document.getElementById('countdown').innerText = `التحدي القادم خلال: ${h}:${m}:${s}`;
             }, 1000);
         }
-
-        // دوال الألعاب الأخرى (بشكل مختصر للعمل)
-        function startMemory() { stopAll(); gameActive="mem"; const stage=document.getElementById('activeGameDisplay'); stage.innerHTML=`<div class="memory-grid" id="mGrid"></div>`; const icons=['💎','🔥','🚀','🌙','👾','⚖️','📚','💻']; const deck=[...icons,...icons].sort(()=>Math.random()-0.5); deck.forEach(i=>{ const c=document.createElement('div'); c.className='cell-2048'; c.onclick=()=>{ if(!c.innerText){ c.innerText=i; c.style.boxShadow=`0 0 10px white`; setTimeout(()=>{ if(document.querySelectorAll('.flipped').length===0) {} }, 500); } }; document.getElementById('mGrid').appendChild(c); }); }
-        function startReflex() { stopAll(); gameActive="ref"; const stage=document.getElementById('activeGameDisplay'); stage.innerHTML=`<div class="score-box" id="rs">Score: 0</div>`; let s=0; function sp(){ if(gameActive!=="ref")return; const t=document.createElement('div'); t.style=`position:absolute; width:40px; height:40px; background:var(--neon-blue); border-radius:50%; left:${Math.random()*80}%; top:${Math.random()*80}%; box-shadow:0 0 15px var(--neon-blue);`; t.onclick=()=>{ s++; document.getElementById('rs').innerText="Score: "+s; t.remove(); sp(); }; stage.appendChild(t); setTimeout(()=>{if(t.parentElement){alert('Game Over! '+s); saveHighScore(s); stopAll();}}, 1000); } sp(); }
-        function processBG(i){ const r=new FileReader(); r.onload=e=>{document.body.style.backgroundImage=`url(${e.target.result})`; localStorage.setItem('custom_bg',e.target.result);}; r.readAsDataURL(i.files[0]); }
-        if(localStorage.getItem('custom_bg')) document.body.style.backgroundImage=`url(${localStorage.getItem('custom_bg')})`;
 
         initApp();
     </script>
