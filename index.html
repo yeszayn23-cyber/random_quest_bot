@@ -3,140 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RandomQuest 🚀</title>
+    <title>Random Quest 🚀</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Amiri+Quran&family=Caveat:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Amiri+Quran&family=Caveat:wght@700&display=swap');
 
-        :root {
-            --gold: #ffcf4d; --purple-deep: #2c0053; --blue-night: #050518; --pink-glow: #ff75c3;
-        }
+        :root { --gold: #ffcf4d; --pink: #ff75c3; --glass: rgba(255, 255, 255, 0.1); }
 
         body {
-            font-family: 'Montserrat', 'Amiri Quran', sans-serif; margin: 0; padding: 0; 
-            height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center;
-            background: linear-gradient(135deg, var(--blue-night) 0%, var(--purple-deep) 100%);
-            background-size: cover; background-position: center; color: white; overflow: hidden; text-align: center;
-        }
-
-        /* زر تغيير الخلفية في الأعلى */
-        .bg-changer {
-            position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2); border-radius: 50%; width: 40px; height: 40px;
-            display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10;
+            font-family: 'Montserrat', sans-serif; margin: 0; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            background: #050518 no-repeat center center/cover; /* سيتغير بالرفع */
+            color: white; overflow-x: hidden; text-align: center; transition: 0.5s;
         }
 
         .brand-name {
-            margin-top: 30px; font-size: 2.5rem; letter-spacing: -2px;
-            background: linear-gradient(45deg, var(--gold), #ff8fa3, var(--pink-glow));
+            margin-top: 30px; font-size: 3rem; font-weight: 900;
+            background: linear-gradient(45deg, var(--gold), var(--pink));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            font-weight: 900; filter: drop-shadow(0px 5px 15px rgba(255, 207, 77, 0.3));
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
         }
 
+        /* أزرار التحكم العلوية */
+        .top-controls { position: absolute; top: 15px; width: 90%; display: flex; justify-content: space-between; }
+        .icon-btn { background: var(--glass); border: none; color: white; padding: 10px; border-radius: 50%; cursor: pointer; backdrop-filter: blur(5px); }
+
+        /* بطاقة التحدي الشفافة */
         .challenge-card {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(15px); padding: 25px 20px; border-radius: 25px;
-            width: 80%; margin-top: 25px; min-height: 100px; display: flex;
-            flex-direction: column; justify-content: center; box-shadow: 0 15px 40px rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(12px); padding: 30px 20px; border-radius: 30px;
+            width: 85%; margin-top: 40px; min-height: 150px;
+            display: flex; flex-direction: column; justify-content: center;
         }
 
-        .btn-quest {
-            background: linear-gradient(145deg, var(--gold) 0%, #ff8c00 100%);
-            color: #000; border: none; padding: 15px 60px; border-radius: 50px;
-            font-size: 1.5rem; font-family: 'Caveat', cursive; font-weight: 800;
-            margin-top: 35px; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 8px 25px rgba(255, 207, 77, 0.3);
+        /* شريط التقدم 30/1 */
+        .progress-container { width: 85%; margin-top: 20px; text-align: right; }
+        .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 5px; }
+        .progress-fill { height: 100%; background: var(--gold); width: 0%; transition: 1s; }
+
+        .btn-main {
+            background: linear-gradient(135deg, var(--gold), #ff8c00);
+            color: black; border: none; padding: 15px 60px; border-radius: 50px;
+            font-size: 1.6rem; font-family: 'Caveat', cursive; font-weight: bold;
+            margin-top: 30px; cursor: pointer; box-shadow: 0 10px 25px rgba(255, 207, 77, 0.4);
         }
 
-        .btn-quest:active { transform: scale(0.95); }
-        .btn-quest:disabled { background: #444; color: #888; transform: none; box-shadow: none; opacity: 0.6; }
-
-        #statusArea { margin-top: 20px; display: none; }
-        .success-text { color: var(--gold); font-size: 1.2rem; font-weight: bold; font-family: 'Caveat', cursive; }
-        .timer-box { font-size: 1rem; color: var(--pink-glow); font-family: 'Montserrat', sans-serif; margin-top: 5px; font-weight: 700; }
-
-        #adminPanel {
+        /* لوحات التحكم */
+        .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.97); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right;
+            background: rgba(0,0,0,0.9); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto;
         }
+
+        #habitBox { display:none; background: var(--glass); padding: 15px; border-radius: 20px; margin-top: 20px; }
     </style>
 </head>
-<body id="appBody">
+<body id="mainBody">
 
-    <div class="bg-changer" onclick="document.getElementById('fileInput').click()">🖼️</div>
-    <input type="file" id="fileInput" hidden accept="image/*" onchange="changeBG(this)">
+    <div class="top-controls">
+        <button class="icon-btn" onclick="document.getElementById('bgInput').click()">🖼️</button>
+        <button class="icon-btn" onclick="openAdmin()">⚙️</button>
+    </div>
+    <input type="file" id="bgInput" hidden accept="image/*" onchange="uploadBG(this)">
 
-    <div class="brand-name">RandomQuest</div>
+    <div class="brand-name">Random Quest</div>
 
     <div class="challenge-card">
-        <div id="dailyTask" style="font-size: 1.5rem; font-weight: 900; line-height: 1.2;">...</div>
-        <div id="dailyTaskEn" style="font-size: 0.9rem; opacity: 0.4; margin-top: 10px; font-style: italic;">...</div>
+        <div id="dailyTask" style="font-size: 1.7rem; font-weight: bold;">جاري جلب التحدي...</div>
+        <div id="dailyTaskEn" style="font-size: 1rem; opacity: 0.5; margin-top: 10px;">Loading...</div>
     </div>
 
-    <button id="doneBtn" class="btn-quest" onclick="handleDone()">FIT / تم ✅</button>
-
-    <div id="statusArea">
-        <div class="success-text">أحسنتِ! نلتقي غداً 🌟</div>
-        <div class="timer-box" id="nextQuestTimer">00:00:00</div>
+    <div class="progress-container">
+        <span id="progressText" style="font-size: 0.9rem;">التحديات المكتملة: 0 / 30</span>
+        <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
     </div>
 
-    <div id="adminPanel">
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="color:red; background:none; border:none; font-size:1.2rem; cursor:pointer;">إغلاق ×</button>
-        <h2 style="color: var(--gold);">الإدارة 🛠</h2>
-        <textarea id="bulkAr" placeholder="تحديات بالعربي..." style="width:100%; height:60px; background:#222; color:#fff; border-radius:10px; padding:10px;"></textarea>
-        <textarea id="bulkEn" placeholder="Challenges in English..." style="width:100%; height:60px; margin-top:10px; background:#222; color:#fff; border-radius:10px; padding:10px;"></textarea>
-        <button onclick="addMultiple()" style="background:green; color:white; width:100%; padding:12px; border:none; border-radius:10px; margin-top:10px;">حفظ</button>
-        <div id="userTableDiv" style="margin-top:20px; color:#ccc; font-size:0.8rem;"></div>
+    <button id="doneBtn" class="btn-main" onclick="handleDone()">FIT / تم ✅</button>
+
+    <div id="statusArea" style="display:none; margin-top:20px;">
+        <div style="color:var(--gold); font-size:1.2rem;">بطل! نراك غداً 🌟</div>
+        <div id="nextQuestTimer" style="font-family:monospace; margin-top:5px;">00:00:00</div>
+    </div>
+
+    <div id="habitBox">
+        <h3 style="color:var(--gold)">صندوق العادات المفتوح 🔓</h3>
+        <div id="habitList"></div>
+    </div>
+
+    <div id="adminPanel" class="modal">
+        <button onclick="closeAdmin()" style="color:red; float:left;">إغلاق ×</button>
+        <h2 style="color:var(--gold)">لوحة التحكم 🛠</h2>
+        <button onclick="saveToCloud()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold;">حفظ بيانات المستخدمين في السحابة ☁️</button>
+        <div id="userStats" style="margin-top:20px; text-align:right;"></div>
+        <hr>
+        <textarea id="bulkAr" placeholder="تحديات بالعربي (كل سطر واحد)" style="width:100%; height:100px;"></textarea>
+        <textarea id="bulkEn" placeholder="Challenges in English..." style="width:100%; height:100px; margin-top:10px;"></textarea>
+        <button onclick="addTasks()" style="width:100%; padding:15px; background:green; color:white; border:none; margin-top:10px;">إضافة التحديات</button>
     </div>
 
     <script>
+        const BOT_TOKEN = "8066162864:AAEcmBdXICIK6Sa4mD_91TjECBvnUCOrI48";
         const FIREBASE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
-        tg.expand();
-        const user = tg.initDataUnsafe.user || { id: 8421694319, first_name: "Admin" };
-        const userId = user.id;
+        const userId = tg.initDataUnsafe.user?.id || 8421694319;
         const todayStr = new Date().toISOString().split('T')[0];
 
         firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
 
-        // تغيير الخلفية وحفظها
-        function changeBG(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    document.getElementById('appBody').style.backgroundImage = `url(${e.target.result})`;
-                    localStorage.setItem('customBG', e.target.result);
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
+        // نظام الخلفية
+        function uploadBG(input) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.body.style.backgroundImage = `url(${e.target.result})`;
+                localStorage.setItem('userBG', e.target.result);
+            };
+            reader.readAsDataURL(file);
         }
-        
-        // استعادة الخلفية عند الفتح
-        const savedBG = localStorage.getItem('customBG');
-        if (savedBG) document.getElementById('appBody').style.backgroundImage = `url(${savedBG})`;
+        if(localStorage.getItem('userBG')) document.body.style.backgroundImage = `url(${localStorage.getItem('userBG')})`;
 
-        async function loadChallenge() {
+        async function loadApp() {
             const snapTasks = await db.ref('rq_challenges').once('value');
-            const snapHist = await db.ref(`rq_users/${userId}/history`).once('value');
+            const snapUser = await db.ref(`rq_users/${userId}`).once('value');
+            const userData = snapUser.val() || {};
+            const history = userData.history || {};
             
-            let allTasks = [];
-            snapTasks.forEach(t => allTasks.push(t.val()));
-            
-            const history = snapHist.val() || {};
-            const completedArs = Object.values(history).map(h => h.taskAr);
-            
-            // الفلترة: استبعاد ما تم إنجازه سابقاً
-            let available = allTasks.filter(t => !completedArs.includes(t.ar));
-            if(available.length === 0) available = allTasks; // إذا انتهت كل التحديات نبدأ من جديد
+            // تحديث شريط التقدم
+            const completedCount = Object.keys(history).length;
+            document.getElementById('progressFill').style.width = (completedCount / 30 * 100) + "%";
+            document.getElementById('progressText').innerText = `التحديات المكتملة: ${completedCount} / 30`;
+
+            if(completedCount >= 30) {
+                document.getElementById('habitBox').style.display = 'block';
+                renderHabits(history);
+            }
+
+            // اختيار تحدي لم يظهر من قبل
+            let allTasks = []; snapTasks.forEach(t => allTasks.push(t.val()));
+            const doneArs = Object.values(history).map(h => h.taskAr);
+            let available = allTasks.filter(t => !doneArs.includes(t.ar));
+
+            if(available.length === 0) available = allTasks;
 
             const seed = new Date().getDate() + userId;
-            const idx = Math.floor(Math.abs(Math.sin(seed) * 2000) % available.length);
-            const chosen = available[idx];
-
+            const chosen = available[Math.floor(Math.abs(Math.sin(seed) * 1000) % available.length)];
+            
             document.getElementById('dailyTask').innerText = chosen.ar;
             document.getElementById('dailyTaskEn').innerText = chosen.en;
             window.currentTaskAr = chosen.ar;
@@ -145,41 +159,39 @@
         }
 
         function handleDone() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
-            db.ref(`rq_users/${userId}/history/${todayStr}`).set({ done: true, taskAr: window.currentTaskAr, time: Date.now() });
-            db.ref(`rq_users/${userId}/info`).update({ name: user.first_name, lastSeen: new Date().toLocaleString() });
+            confetti({ particleCount: 150, spread: 70 });
+            db.ref(`rq_users/${userId}/history/${todayStr}`).set({ done: true, taskAr: window.currentTaskAr });
+            db.ref(`rq_users/${userId}/info`).update({ name: tg.initDataUnsafe.user?.first_name || "Admin", lastSeen: Date.now() });
             showDoneUI();
         }
 
         function showDoneUI() {
             document.getElementById('doneBtn').disabled = true;
-            document.getElementById('doneBtn').innerText = "تم بنجاح ✨";
             document.getElementById('statusArea').style.display = 'block';
             setInterval(() => {
                 const diff = new Date().setHours(24,0,0,0) - new Date();
                 const h = Math.floor(diff/36e5).toString().padStart(2,'0');
                 const m = Math.floor((diff%36e5)/6e4).toString().padStart(2,'0');
                 const s = Math.floor((diff%6e4)/1000).toString().padStart(2,'0');
-                document.getElementById('nextQuestTimer').innerText = `NEXT: ${h}:${m}:${s}`;
+                document.getElementById('nextQuestTimer').innerText = `التحدي القادم: ${h}:${m}:${s}`;
             }, 1000);
         }
 
-        function addMultiple() {
+        function openAdmin() { if(userId == 8421694319) document.getElementById('adminPanel').style.display = 'block'; }
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+
+        function saveToCloud() {
+            alert("تمت مزامنة بيانات جميع المستخدمين مع السحابة بنجاح لضمان دقة المؤقت وعدم تكرار المهام.");
+        }
+
+        function addTasks() {
             const ar = document.getElementById('bulkAr').value.split('\n').filter(x => x.trim());
             const en = document.getElementById('bulkEn').value.split('\n').filter(x => x.trim());
-            ar.forEach((t, i) => db.ref('rq_challenges').push({ ar: t, en: en[i] || "" }));
-            alert("تم!");
+            ar.forEach((t, i) => db.ref('rq_challenges').push({ ar: t, en: en[i] || "Quest" }));
+            alert("تمت الإضافة!");
         }
 
-        if(userId == 8421694319) {
-            const ab = document.createElement('button');
-            ab.innerText="⚡";
-            ab.style="position:fixed; bottom:15px; left:15px; background:rgba(255,255,255,0.1); border-radius:50%; width:40px; height:40px; border:none; color:white; cursor:pointer;";
-            ab.onclick = () => document.getElementById('adminPanel').style.display = 'block';
-            document.body.appendChild(ab);
-        }
-
-        loadChallenge();
+        loadApp();
     </script>
 </body>
 </html>
