@@ -3,106 +3,124 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ʀᴀɴᴅᴏᴍǫᴜᴇ𝑠ᴛ 🚀</title>
+    <title>RandomQuest 🚀</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Amiri+Quran&family=Montserrat:wght@800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@800;900&family=Amiri+Quran&family=Caveat:wght@700&display=swap');
 
         :root {
-            --purple: #a18cd1; --blue: #70a1ff; --green: #7bed9f; --pink: #ffafbd; --amber: #ff9f43; --bg: #0d0d0d;
+            --gold: #ffcf4d; --gold-dark: #b08d28; --purple-deep: #2c0053; --blue-night: #050518; --pink-glow: #ff75c3; --bg-main: #02020a;
         }
 
         body {
-            font-family: 'Caveat', 'Amiri Quran', serif; margin: 0; padding: 0; height: 100vh;
+            font-family: 'Montserrat', 'Amiri Quran', sans-serif; margin: 0; padding: 0; height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            background: var(--bg); color: white; overflow: hidden; text-align: center;
+            background: linear-gradient(135deg, var(--blue-night) 0%, var(--purple-deep) 100%);
+            background-size: 200% 200%; animation: gradientBG 15s ease infinite;
+            color: white; overflow: hidden; text-align: center;
         }
 
+        @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+
+        /* الاسم الجديد: تصميم سينمائي */
         .brand-name {
-            margin-top: 35px;
+            margin-top: 40px;
             font-family: 'Montserrat', sans-serif;
-            font-size: 2.8rem;
-            letter-spacing: -1px;
-            background: linear-gradient(45deg, var(--purple), var(--blue), var(--pink));
+            font-size: 3.2rem;
+            letter-spacing: -3px;
+            background: linear-gradient(45deg, var(--gold), #ff8fa3, var(--pink-glow));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             font-weight: 900;
-            filter: drop-shadow(0px 5px 15px rgba(161, 140, 209, 0.4));
+            filter: drop-shadow(0px 8px 25px rgba(255, 207, 77, 0.4));
+            text-transform: uppercase;
         }
 
-        .main-challenge-btn {
-            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
-            padding: 35px 20px; border-radius: 30px; width: 85%; margin-top: 25px; min-height: 130px;
-            display: flex; flex-direction: column; justify-content: center;
-            backdrop-filter: blur(10px); box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        /* بطاقة التحدي: تصميم زجاجي */
+        .challenge-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            backdrop-filter: blur(15px);
+            padding: 40px 25px;
+            border-radius: 35px;
+            width: 85%;
+            margin-top: 35px;
+            min-height: 140px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            transition: all 0.4s ease;
         }
 
-        /* الزر الجديد "البوقوس" */
-        .btn-fit {
-            background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
-            color: #fff; border: none; padding: 18px 70px;
-            border-radius: 50px; /* دائري بالكامل */
-            font-size: 1.8rem; font-family: 'Caveat', cursive; font-weight: bold;
-            margin-top: 40px; cursor: pointer; transition: all 0.3s ease;
-            box-shadow: 0 10px 20px rgba(255, 159, 67, 0.3), inset 0 -4px 0 rgba(0,0,0,0.2);
+        /* الزر الجديد: ذهبي متوهج بلمسة Neumorphic */
+        .btn-quest {
+            background: linear-gradient(145deg, var(--gold) 0%, #ff8c00 100%);
+            color: #000; border: none; padding: 18px 80px;
+            border-radius: 50px;
+            font-size: 1.8rem; font-family: 'Caveat', cursive; font-weight: 800;
+            margin-top: 50px; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 30px rgba(255, 207, 77, 0.35), inset 0 -4px 0 rgba(0,0,0,0.2), inset 0 4px 0 rgba(255,255,255,0.1);
             position: relative; overflow: hidden;
+            letter-spacing: 1px;
         }
 
-        .btn-fit:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 25px rgba(255, 159, 67, 0.4);
-            filter: brightness(1.1);
+        .btn-quest:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(255, 207, 77, 0.5);
+            filter: brightness(1.15);
         }
 
-        .btn-fit:active {
-            transform: translateY(2px);
-            box-shadow: 0 5px 10px rgba(255, 159, 67, 0.2);
+        .btn-quest:active {
+            transform: translateY(3px) scale(0.98);
+            box-shadow: 0 5px 15px rgba(255, 207, 77, 0.3);
         }
 
-        .btn-fit:disabled {
-            background: #2c2c2c; color: #555; box-shadow: none; transform: none; cursor: not-allowed; filter: none;
+        .btn-quest:disabled {
+            background: #222; color: #666; box-shadow: none; transform: none; cursor: not-allowed; filter: none; opacity: 0.7;
         }
 
-        #statusArea { margin-top: 25px; display: none; }
-        .timer-box { font-size: 1.1rem; color: var(--pink); font-family: 'Montserrat', sans-serif; letter-spacing: 1px; margin-top: 10px; opacity: 0.8; }
+        #statusArea { margin-top: 30px; display: none; }
+        .success-text { color: var(--gold); font-size: 1.4rem; font-weight: bold; font-family: 'Caveat', cursive; }
+        .timer-box { font-size: 1.1rem; color: var(--pink-glow); font-family: 'Montserrat', sans-serif; letter-spacing: 1.5px; margin-top: 10px; font-weight: 700; opacity: 0.9; }
 
-        /* لوحة التحكم */
+        /* لوحة التحكم: واجهة سينمائية داكنة */
         #adminPanel {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right; font-family: sans-serif;
+            background: rgba(0,0,0,0.95); backdrop-filter: blur(10px); z-index: 1000; padding: 25px; box-sizing: border-box; overflow-y: auto; text-align: right; font-family: sans-serif;
         }
-        .admin-section { background: #111; padding: 15px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #222; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
-        th, td { border: 1px solid #222; padding: 12px; text-align: center; }
-        th { background: #1a1a1a; color: var(--amber); }
-        textarea { width: 100%; height: 70px; background: #0a0a0a; color: #fff; border: 1px solid #333; border-radius: 12px; padding: 12px; margin-top: 5px; resize: none; box-sizing: border-box; }
+        .admin-section { background: rgba(255,255,255,0.02); padding: 20px; border-radius: 25px; margin-bottom: 25px; border: 1px solid rgba(255,255,255,0.05); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 12px; }
+        th, td { border: 1px solid rgba(255,255,255,0.05); padding: 12px; text-align: center; }
+        th { background: rgba(255,255,255,0.03); color: var(--gold); }
+        textarea { width: 100%; height: 75px; background: rgba(0,0,0,0.3); color: #fff; border: 1px solid rgba(255,255,255,0.1); border-radius: 15px; padding: 12px; margin-top: 5px; resize: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div class="brand-name">ʀᴀɴᴅᴏᴍǫᴜᴇ𝑠ᴛ</div>
+    <div class="brand-name">RandomQuest</div>
 
-    <div class="main-challenge-btn">
-        <div id="dailyTask" style="font-size: 1.8rem; font-weight: bold; line-height: 1.4;">...</div>
-        <div id="dailyTaskEn" style="font-size: 1.1rem; opacity: 0.4; margin-top: 12px; font-style: italic;">...</div>
+    <div class="challenge-card">
+        <div id="dailyTask" style="font-size: 1.8rem; font-weight: 900; line-height: 1.3;">جارٍ التحميل...</div>
+        <div id="dailyTaskEn" style="font-size: 1.1rem; opacity: 0.3; margin-top: 12px; font-style: italic;">...</div>
     </div>
 
-    <button id="doneBtn" class="btn-fit" onclick="handleDone()">FIT / تم ✅</button>
+    <button id="doneBtn" class="btn-quest" onclick="handleDone()">FIT / تم ✅</button>
 
     <div id="statusArea">
-        <div style="color: var(--green); font-size: 1.4rem; font-weight: bold;">أحسنتِ! نلتقي غداً 🌟</div>
+        <div class="success-text">أحسنتِ صنعاً! نلتقي غداً 🌟</div>
         <div class="timer-box" id="nextQuestTimer">00:00:00</div>
     </div>
 
     <div id="adminPanel">
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="color:#ff4757; background:none; border:none; font-size:1.3rem; cursor:pointer; font-weight:bold;">إغلاق ×</button>
-        <h2 style="color: var(--amber); margin-bottom: 25px;">الإدارة 🛠</h2>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="color:#ff4757; background:none; border:none; font-size:1.3rem; cursor:pointer; font-weight:bold; float: left;">إغلاق ×</button>
+        <h2 style="color: var(--gold); margin-bottom: 30px;">الإدارة 🛠</h2>
         
         <div class="admin-section">
-            <h3 style="color: var(--blue);">👤 المستخدمين النشطين</h3>
+            <h3 style="color: #4a90e2;">👤 سجل الزوار</h3>
             <div style="overflow-x: auto;">
                 <table id="userTable">
                     <thead><tr><th>المستخدم</th><th>إنجاز</th><th>آخر ظهور</th></tr></thead>
@@ -112,10 +130,10 @@
         </div>
 
         <div class="admin-section">
-            <h3 style="color: var(--green);">📥 إضافة تحديات جديدة</h3>
+            <h3 style="color: #2ecc71;">📥 إضافة تحديات جديدة</h3>
             <textarea id="bulkAr" placeholder="التحدي بالعربي..."></textarea>
             <textarea id="bulkEn" placeholder="Challenge in English..."></textarea>
-            <button onclick="addMultiple()" style="background:var(--green); width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer; color: #000;">إرسال إلى السحابة ☁️</button>
+            <button onclick="addMultiple()" style="background:linear-gradient(145deg, #2ecc71, #27ae60); width:100%; padding:15px; border:none; border-radius:12px; font-weight:bold; margin-top:10px; cursor:pointer; color: #fff;">إرسال إلى السحابة ☁️</button>
         </div>
     </div>
 
@@ -148,7 +166,7 @@
             snapTasks.forEach(t => { tasks.push(t.val()); });
             
             if (tasks.length === 0) {
-                document.getElementById('dailyTask').innerText = "لا توجد تحديات حالياً!";
+                document.getElementById('dailyTask').innerText = "أضف تحديات من الإدارة!";
                 return;
             }
 
@@ -168,7 +186,7 @@
         }
 
         function handleDone() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff9f43', '#ff6b6b', '#a18cd1'] });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ffcf4d', '#ff8c00', '#ff75c3'] });
             db.ref(`rq_users/${userId}/history/${todayStr}`).set({
                 done: true, 
                 taskAr: window.currentTaskAr,
@@ -180,13 +198,14 @@
             document.getElementById('doneBtn').disabled = true;
             document.getElementById('doneBtn').innerText = "تم بنجاح ✨";
             document.getElementById('statusArea').style.display = 'block';
+            document.getElementById('dailyTask').style.color = '#2ecc71';
             
             setInterval(() => {
                 const diff = new Date().setHours(24,0,0,0) - new Date();
                 const h = Math.floor(diff/36e5).toString().padStart(2,'0');
                 const m = Math.floor((diff%36e5)/6e4).toString().padStart(2,'0');
                 const s = Math.floor((diff%6e4)/1000).toString().padStart(2,'0');
-                document.getElementById('nextQuestTimer').innerText = `NEXT QUEST IN: ${h}:${m}:${s}`;
+                document.getElementById('nextQuestTimer').innerText = `التحدي التالي: ${h}:${m}:${s}`;
             }, 1000);
         }
 
@@ -212,10 +231,11 @@
             document.getElementById('bulkAr').value = ""; document.getElementById('bulkEn').value = "";
         }
 
+        // إظهار زر الإدارة بلمسة خفية
         if(userId == 8421694319) {
             const ab = document.createElement('button');
-            ab.innerText="⚙️";
-            ab.style="position:fixed; top:15px; right:15px; background:rgba(255,255,255,0.05); border-radius:50%; border:none; color:#555; width:40px; height:40px; cursor:pointer; z-index:2001; font-size:20px;";
+            ab.innerText="⚡️";
+            ab.style="position:fixed; bottom:15px; left:15px; background:rgba(255,255,255,0.03); border-radius:50%; border:none; color:#333; width:45px; height:45px; cursor:pointer; z-index:2001; font-size:18px; border:1px solid rgba(255,255,255,0.05);";
             ab.onclick = () => {
                 document.getElementById('adminPanel').style.display = 'block';
                 loadAdminData();
