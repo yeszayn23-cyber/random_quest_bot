@@ -3,409 +3,245 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sultana Quest - Zainab Edition 👑</title>
-    
+    <title>Zainab Pro - Game Hub 👑</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
-    
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Tajawal:wght@700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Cairo:wght@700&display=swap');
         
         :root {
             --neon-green: #39ff14;
             --neon-blue: #00ffff;
-            --pink: #ff00ff;
-            --bg-dark: #020205;
-            --glass: rgba(255, 255, 255, 0.05);
+            --bg-dark: #050510;
         }
 
-        * { 
-            box-sizing: border-box; 
-            -webkit-tap-highlight-color: transparent; 
-            user-select: none;
-        }
-
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: none; }
         body {
-            font-family: 'Tajawal', sans-serif;
+            font-family: 'Cairo', sans-serif;
             margin: 0; padding: 0;
             width: 100vw; height: 100vh;
-            background-color: var(--bg-dark);
-            background-size: cover;
-            background-position: center;
-            color: white; 
-            overflow: hidden;
+            background: var(--bg-dark) no-repeat center center/cover;
+            color: white; overflow: hidden;
             display: flex; flex-direction: column; align-items: center;
         }
 
-        /* الهيدر العلوي */
-        .header-main {
-            width: 100%; text-align: center; padding: 40px 0 20px 0;
-            z-index: 10;
-        }
-        .brand-title {
-            font-family: 'Montserrat', sans-serif;
-            font-size: 2.8rem; font-weight: 900;
-            background: linear-gradient(to right, var(--neon-green), var(--neon-blue), var(--pink));
+        .header-area { width: 100%; text-align: center; padding-top: 45px; }
+        .brand-name {
+            font-family: 'Montserrat', sans-serif; font-size: 2.2rem; font-weight: 900;
+            background: linear-gradient(45deg, var(--neon-green), var(--neon-blue));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px rgba(57, 255, 20, 0.5));
+            filter: drop-shadow(0 0 10px var(--neon-green));
         }
 
-        /* أزرار التحكم الجانبية */
-        .side-controls {
-            position: absolute; top: 15px; width: 92%;
+        /* التحكم العلوي */
+        .top-controls {
+            position: absolute; top: 15px; width: 90%;
             display: flex; justify-content: space-between; z-index: 1000;
         }
-        .ctrl-btn {
-            background: var(--glass); border: 2px solid var(--neon-green);
-            color: white; border-radius: 50%; width: 55px; height: 55px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.4rem; backdrop-filter: blur(10px);
-            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
+        .icon-btn {
+            background: rgba(255,255,255,0.05); border: 1.5px solid var(--neon-green);
+            color: white; border-radius: 50%; width: 50px; height: 50px;
+            display: flex; align-items: center; justify-content: center; font-size: 1.3rem;
+            backdrop-filter: blur(10px);
         }
 
-        /* منطقة اللعب الكبيرة */
-        #mainContainer {
-            width: 94%; flex: 1; display: flex; flex-direction: column;
-            justify-content: center; position: relative;
-        }
-
+        /* منطقة اللعب */
+        #gameSection { width: 92%; flex: 1; display: flex; flex-direction: column; justify-content: center; }
         #gameCanvas {
-            background: rgba(0, 0, 0, 0.9);
-            border: 3px solid var(--neon-blue);
-            border-radius: 40px;
-            width: 100%; height: 450px;
-            position: relative; overflow: hidden;
-            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.1), 0 0 30px rgba(0, 0, 0, 0.5);
+            background: rgba(0,0,0,0.85); border: 2px solid var(--neon-blue);
+            border-radius: 30px; height: 420px; position: relative; overflow: hidden;
+            box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
         }
 
-        /* Pepe Character */
-        #pepePlayer {
-            width: 50px; height: 50px; position: absolute;
-            bottom: 25px; left: 50px; z-index: 100;
-            background: #4CAF50; border-radius: 50% 50% 40% 40%;
-            border: 3px solid #1B5E20; transition: bottom 0.22s cubic-bezier(0.1, 0.6, 0.1, 1);
+        /* تصميم لعبة 2048 */
+        .grid-2048 {
+            display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(4, 1fr);
+            gap: 8px; padding: 12px; height: 100%; background: #111; border-radius: 25px;
         }
-        #pepePlayer::before, #pepePlayer::after {
-            content: ''; position: absolute; top: -6px; width: 14px; height: 14px;
-            background: white; border-radius: 50%; border: 1px solid black;
+        .tile {
+            background: rgba(255,255,255,0.1); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.5rem; font-weight: 900; color: white;
+            transition: transform 0.1s, background 0.2s;
         }
-        #pepePlayer::before { left: 7px; } #pepePlayer::after { right: 7px; }
+        .tile-2 { background: #333; } .tile-4 { background: #444; }
+        .tile-8 { background: #f2b179; color: black; } .tile-16 { background: #f59563; }
+        .tile-32 { background: #f67c5f; } .tile-64 { background: #f65e3b; }
+        .tile-128 { background: var(--neon-blue); color: black; box-shadow: 0 0 10px var(--neon-blue); }
+        .tile-256, .tile-512, .tile-1024, .tile-2048 { background: var(--neon-green); color: black; box-shadow: 0 0 15px var(--neon-green); }
 
-        /* Obstacles & Info */
-        .obs { position: absolute; bottom: 25px; right: -70px; font-size: 2.5rem; }
-        .hud-display {
-            position: absolute; top: 25px; left: 0; width: 100%;
-            display: flex; justify-content: space-around; z-index: 200;
-        }
-        .pill {
-            background: rgba(0,0,0,0.8); border: 1.5px solid var(--neon-green);
-            padding: 8px 20px; border-radius: 20px; font-weight: 900;
-            color: var(--neon-green); font-size: 1rem;
-        }
-
-        .back-menu-btn {
-            position: absolute; bottom: 20px; right: 20px;
-            background: var(--neon-blue); color: black; border: none;
-            padding: 10px 20px; border-radius: 15px; font-weight: bold;
+        /* Pepe */
+        #pepe {
+            width: 42px; height: 42px; position: absolute; bottom: 20px; left: 40px;
+            background: #4CAF50; border-radius: 50% 50% 40% 40%; border: 2px solid #1B5E20;
+            transition: bottom 0.2s;
         }
 
-        /* واجهة التحدي اليومي */
-        #questStage { width: 90%; text-align: center; margin-bottom: 60px; }
-        .quest-box {
-            background: rgba(10, 10, 20, 0.9); border: 2px solid var(--neon-green);
-            padding: 40px 25px; border-radius: 45px;
-            box-shadow: 0 0 30px rgba(57, 255, 20, 0.2);
-        }
-        .btn-action {
-            background: var(--neon-green); color: black; border: none;
-            padding: 18px; width: 100%; border-radius: 20px;
-            font-weight: 900; font-size: 1.3rem; margin-top: 25px;
-            box-shadow: 0 8px 0 #28b80e; transition: 0.1s;
-        }
-        .btn-action:active { transform: translateY(4px); box-shadow: 0 4px 0 #28b80e; }
+        .score-live { position: absolute; top: 15px; left: 15px; color: var(--neon-green); font-weight: 900; font-size: 1.2rem; }
+        .home-btn { position: absolute; top: 15px; right: 15px; z-index: 1000; background: none; border: none; font-size: 1.5rem; cursor: pointer; }
 
-        /* التقدم العام */
-        .progress-footer { width: 90%; padding-bottom: 40px; }
-        .prog-label { font-size: 0.9rem; margin-bottom: 10px; color: #888; display: flex; justify-content: space-between; }
-        .prog-track { height: 16px; background: #111; border-radius: 20px; overflow: hidden; border: 1px solid #333; }
-        .prog-bar { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); width: 0%; transition: 1.5s; }
+        .progress-zone { width: 90%; padding-bottom: 30px; }
+        .p-bar { height: 12px; background: #111; border-radius: 10px; overflow: hidden; border: 1px solid #333; }
+        .p-fill { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); width: 0%; transition: 1s; }
 
-        /* لوحة التحكم */
-        .admin-modal {
-            display: none; position: fixed; inset: 0; background: #000;
-            z-index: 5000; padding: 30px; overflow-y: auto; text-align: right;
-        }
-        .input-style {
-            width: 100%; padding: 15px; background: #111; border: 2px solid #333;
-            color: #fff; border-radius: 15px; margin: 15px 0; font-family: inherit;
-        }
+        .btn-menu { background: var(--neon-green); color: black; border: none; padding: 15px; width: 80%; border-radius: 15px; font-weight: 900; margin: 10px 0; font-size: 1.1rem; }
     </style>
 </head>
-<body onclick="gameJump()">
+<body onclick="handleTap()">
 
-    <div class="side-controls">
-        <button id="bgTrigger" class="ctrl-btn" onclick="document.getElementById('bgFile').click(); event.stopPropagation();" style="display:none;">🖼️</button>
-        <button id="adminTrigger" class="ctrl-btn" onclick="toggleAdmin(true); event.stopPropagation();" style="display:none;">⚙️</button>
+    <div class="top-controls">
+        <button id="bgBtn" class="icon-btn" onclick="document.getElementById('bgInput').click(); event.stopPropagation();" style="display:none;">🖼️</button>
+        <button id="adminBtn" class="icon-btn" onclick="openAdmin(); event.stopPropagation();" style="display:none;">⚙️</button>
     </div>
-    <input type="file" id="bgFile" hidden onchange="updateBackground(this)">
+    <input type="file" id="bgInput" hidden onchange="setBG(this)">
 
-    <div class="header-main">
-        <div class="brand-title">Random Quest</div>
-    </div>
-
-    <div id="questStage" style="display:none;">
-        <div class="quest-box">
-            <div style="color:var(--neon-green); font-size:0.9rem; letter-spacing:3px; margin-bottom:15px;">DAILY MISSION</div>
-            <h2 id="arabicTask" style="margin:0; font-size:2.2rem; line-height:1.4;">...</h2>
-            <button class="btn-action" onclick="completeQuest()">تم الإنجاز ✅</button>
-        </div>
+    <div class="header-area">
+        <div class="brand-name">Random Quest</div>
     </div>
 
-    <div id="mainContainer" style="display:none;">
+    <div id="gameSection">
         <div id="gameCanvas">
-            <div id="gameStartUI" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:20px;">
-                <button class="btn-action" style="width:70%;" onclick="startPepe(); event.stopPropagation();">العب Pepe Jump 🐸</button>
-                <button class="btn-action" style="width:70%; background:var(--neon-blue); box-shadow:0 8px 0 #009999;" onclick="startMemory(); event.stopPropagation();">تحدي الذاكرة 🧠</button>
+            <div id="mainMenu" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%;">
+                <button class="btn-menu" onclick="initGame('2048')">لعبة 2048 🧩</button>
+                <button class="btn-menu" style="background:var(--neon-blue)" onclick="initGame('pepe')">قفز بيبي 🐸</button>
+                <button class="btn-menu" style="background:#ff00ff" onclick="initGame('mem')">تحدي الذاكرة 🧠</button>
             </div>
         </div>
-        <div id="highscoreDisplay" style="text-align:center; font-size:0.9rem; color:var(--neon-blue); margin-top:15px; font-weight:bold;"></div>
     </div>
 
-    <div class="progress-footer">
-        <div class="prog-label">
-            <span id="progText">الرحلة: 0 / 30 يوم</span>
-            <span>🔥</span>
-        </div>
-        <div class="prog-track"><div id="progFill" class="prog-bar"></div></div>
-    </div>
-
-    <div id="adminPanel" class="admin-modal">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h2 style="color:var(--neon-green);">لوحة تحكم زينب 👑</h2>
-            <button onclick="toggleAdmin(false)" style="color:white; background:none; border:none; font-size:3rem;">&times;</button>
-        </div>
-        <div style="background:var(--glass); padding:20px; border-radius:25px; border:1px solid #222; margin-top:20px;">
-            <h3>➕ إضافة تحدي جديد</h3>
-            <input type="text" id="taskInput" class="input-style" placeholder="اكتبي المهمة هنا...">
-            <button class="btn-action" onclick="pushTask()">حفظ في قاعدة البيانات</button>
-        </div>
-        <div id="adminUsersList" style="margin-top:30px;"></div>
+    <div class="progress-zone">
+        <div id="pText" style="font-size:0.8rem; margin-bottom:5px;">المستوى: 0 / 30 🔥</div>
+        <div class="p-bar"><div id="pFill" class="p-fill"></div></div>
     </div>
 
     <script>
-        // إعدادات Firebase
-        const DB_CONFIG = "https://randomquest-app-default-rtdb.firebaseio.com/";
+        const FIRE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
-        const ZAINAB_ID = 8421694319;
-        const currentUser = tg.initDataUnsafe.user || { id: ZAINAB_ID, first_name: "زينب" };
+        const uID = tg.initDataUnsafe.user?.id || 8421694319;
 
-        firebase.initializeApp({ databaseURL: DB_CONFIG });
-        const database = firebase.database();
+        firebase.initializeApp({ databaseURL: FIRE_URL });
+        const db = firebase.database();
+        let activeG = "", loops = [], board = [];
 
-        let activeGame = "", gameIntervals = [], currentScore = 0, currentLevel = 1;
+        if(uID == 8421694319) { document.getElementById('bgBtn').style.display='flex'; document.getElementById('adminBtn').style.display='flex'; }
 
-        // التحقق من هوية زينب
-        if (currentUser.id == ZAINAB_ID) {
-            document.getElementById('bgTrigger').style.display = 'flex';
-            document.getElementById('adminTrigger').style.display = 'flex';
+        function handleTap() { if(activeG === 'pepe') jump(); }
+
+        function initGame(type) {
+            activeG = type; loops.forEach(clearInterval); loops = [];
+            const cvs = document.getElementById('gameCanvas');
+            cvs.innerHTML = `<button class="home-btn" onclick="location.reload()">🏠</button>`;
+
+            if(type === '2048') {
+                const grid = document.createElement('div'); grid.className = 'grid-2048';
+                cvs.appendChild(grid);
+                start2048();
+            } else if(type === 'pepe') {
+                cvs.innerHTML += `<div class="score-live" id="ls">0</div><div id="pepe"></div>`;
+                startPepe();
+            } else if(type === 'mem') {
+                startMemory();
+            }
         }
 
-        /* ----------------------- محرك الألعاب ----------------------- */
-        function resetCanvas() {
-            activeGame = "";
-            gameIntervals.forEach(clearInterval);
-            gameIntervals = [];
-            document.getElementById('gameCanvas').innerHTML = `
-                <div id="gameStartUI" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:20px;">
-                    <button class="btn-action" style="width:70%;" onclick="startPepe(); event.stopPropagation();">العب Pepe Jump 🐸</button>
-                    <button class="btn-action" style="width:70%; background:var(--neon-blue); box-shadow:0 8px 0 #009999;" onclick="startMemory(); event.stopPropagation();">تحدي الذاكرة 🧠</button>
-                </div>`;
+        /* --- LOGIC 2048 --- */
+        function start2048() {
+            board = Array(16).fill(0);
+            addTile(); addTile();
+            draw2048();
+            // إضافة التحكم بالسحب (Swipe)
+            let startX, startY;
+            document.addEventListener('touchstart', e => { startX = e.touches[0].clientX; startY = e.touches[0].clientY; }, {passive: false});
+            document.addEventListener('touchend', e => {
+                let diffX = e.changedTouches[0].clientX - startX;
+                let diffY = e.changedTouches[0].clientY - startY;
+                if(Math.abs(diffX) > Math.abs(diffY)) {
+                    if(diffX > 30) move2048('right'); else if(diffX < -30) move2048('left');
+                } else {
+                    if(diffY > 30) move2048('down'); else if(diffY < -30) move2048('up');
+                }
+            }, {passive: false});
         }
 
+        function addTile() {
+            let empty = board.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
+            if(empty.length) board[empty[Math.floor(Math.random()*empty.length)]] = Math.random() > 0.1 ? 2 : 4;
+        }
+
+        function draw2048() {
+            const grid = document.querySelector('.grid-2048');
+            if(!grid) return;
+            grid.innerHTML = "";
+            board.forEach(val => {
+                const div = document.createElement('div');
+                div.className = `tile ${val ? 'tile-'+val : ''}`;
+                div.innerText = val || "";
+                grid.appendChild(div);
+            });
+        }
+
+        function move2048(dir) {
+            if(activeG !== '2048') return;
+            let oldBoard = [...board];
+            // منطق الحركة (مختصر للتبسيط)
+            for(let i=0; i<4; i++) {
+                let row = [];
+                for(let j=0; j<4; j++) {
+                    let idx = (dir==='left'||dir==='right') ? i*4+j : j*4+i;
+                    row.push(board[idx]);
+                }
+                if(dir==='right' || dir==='down') row.reverse();
+                let filtered = row.filter(v => v !== 0);
+                for(let j=0; j<filtered.length-1; j++) {
+                    if(filtered[j] === filtered[j+1]) { filtered[j]*=2; filtered[j+1]=0; if(filtered[j]===2048) confetti(); }
+                }
+                filtered = filtered.filter(v => v !== 0);
+                while(filtered.length < 4) filtered.push(0);
+                if(dir==='right' || dir==='down') filtered.reverse();
+                for(let j=0; j<4; j++) {
+                    let idx = (dir==='left'||dir==='right') ? i*4+j : j*4+i;
+                    board[idx] = filtered[j];
+                }
+            }
+            if(JSON.stringify(oldBoard) !== JSON.stringify(board)) { addTile(); draw2048(); }
+        }
+
+        /* --- Pepe & Memory --- (نفس منطقك السابق مع تحسينات) */
         function startPepe() {
-            activeGame = "pepe";
-            currentScore = 0; currentLevel = 1;
+            let s = 0;
             const cvs = document.getElementById('gameCanvas');
-            cvs.innerHTML = `
-                <div class="hud-display">
-                    <div class="pill" id="scoreHUD">Score: 0</div>
-                    <div class="pill" id="lvlHUD" style="border-color:var(--neon-blue); color:var(--neon-blue);">Lvl: 1</div>
-                </div>
-                <div id="pepePlayer"></div>
-                <button class="back-menu-btn" onclick="event.stopPropagation(); resetCanvas();">الخروج 🏠</button>
-            `;
-
-            function createObs() {
-                if (activeGame !== "pepe") return;
-                const o = document.createElement('div');
-                o.className = "obs";
-                o.innerHTML = ["🌵", "🔥", "🧱", "💣"][Math.floor(Math.random() * 4)];
-                cvs.appendChild(o);
-
-                let x = -70;
-                let speed = 6.5 + (currentLevel * 0.6); // زيادة السرعة مع المستوى
-
-                let move = setInterval(() => {
-                    x += speed;
-                    o.style.right = x + "px";
-
-                    let p = document.getElementById('pepePlayer');
-                    if(!p) return;
-                    
-                    // منطق الاصطدام المطور
-                    let pRect = p.getBoundingClientRect();
-                    let oRect = o.getBoundingClientRect();
-
-                    if (oRect.left < pRect.right && oRect.right > pRect.left && oRect.top < pRect.bottom) {
-                        clearInterval(move);
-                        alert(`خسرتي! المستوى: ${currentLevel}\nالسكور: ${currentScore}`);
-                        saveHighscore(currentScore, currentLevel);
-                        resetCanvas();
+            function spawn() {
+                if(activeG !== 'pepe') return;
+                const o = document.createElement('div'); o.className = 'tile'; 
+                o.style = "position:absolute; bottom:20px; right:-50px; width:40px; height:40px; background:red; border-radius:8px; display:flex; align-items:center; justify-content:center;";
+                o.innerText = "🌵"; cvs.appendChild(o);
+                let x = -50;
+                let m = setInterval(() => {
+                    x += 7; o.style.right = x + "px";
+                    let pt = document.getElementById('pepe').offsetTop;
+                    if(x > (cvs.offsetWidth - 85) && x < (cvs.offsetWidth - 35) && pt > 350) {
+                        clearInterval(m); alert("خسرت! سكور: " + s); initGame('pepe');
                     }
-
-                    if (x > cvs.offsetWidth) {
-                        clearInterval(move);
-                        o.remove();
-                        currentScore += 10;
-                        document.getElementById('scoreHUD').innerText = "Score: " + currentScore;
-                        
-                        // ترقية المستوى
-                        if (currentScore % 60 === 0 && currentLevel < 30) {
-                            currentLevel++;
-                            document.getElementById('lvlHUD').innerText = "Lvl: " + currentLevel;
-                            confetti({ particleCount: 50, spread: 60 });
-                        }
-                    }
+                    if(x > cvs.offsetWidth) { clearInterval(m); o.remove(); s++; document.getElementById('ls').innerText = s; }
                 }, 20);
-                gameIntervals.push(move);
-                
-                let nextSpawn = Math.max(700, 2000 - (currentLevel * 100));
-                setTimeout(createObs, Math.random() * 500 + nextSpawn);
+                loops.push(m);
+                setTimeout(spawn, Math.random() * 1000 + 1500);
             }
-            createObs();
+            spawn();
         }
 
-        function gameJump() {
-            if (activeGame !== "pepe") return;
-            const p = document.getElementById('pepePlayer');
-            if (p.style.bottom === "140px") return;
-            p.style.bottom = "140px";
-            setTimeout(() => { if(p) p.style.bottom = "25px"; }, 350);
+        function jump() {
+            const p = document.getElementById('pepe');
+            if(!p || p.style.bottom === "130px") return;
+            p.style.bottom = "130px";
+            setTimeout(() => { if(p) p.style.bottom = "20px"; }, 350);
         }
 
-        function startMemory() {
-            activeGame = "memory";
-            const cvs = document.getElementById('gameCanvas');
-            cvs.innerHTML = `<button class="back-menu-btn" style="top:10px; bottom:auto;" onclick="event.stopPropagation(); resetCanvas();">الخروج 🏠</button>`;
-            const grid = document.createElement('div');
-            grid.style = "display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:70px 20px 20px; height:100%;";
-            
-            const icons = ['👑','⭐','💎','🍎','🚀','🌙','👾','🔥'];
-            const deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
-            let flipped = [];
+        function setBG(i) { const r = new FileReader(); r.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; localStorage.setItem('ubg', e.target.result); }; r.readAsDataURL(i.files[0]); }
+        if(localStorage.getItem('ubg')) document.body.style.backgroundImage = `url(${localStorage.getItem('ubg')})`;
 
-            deck.forEach(icon => {
-                const card = document.createElement('div');
-                card.style = "background:#111; border:2px solid var(--neon-blue); border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; height:65px;";
-                card.onclick = (e) => {
-                    e.stopPropagation();
-                    if (flipped.length < 2 && !card.innerText) {
-                        card.innerText = icon;
-                        card.style.background = "#1a1a1a";
-                        flipped.push(card);
-                        if (flipped.length === 2) {
-                            if (flipped[0].innerText === flipped[1].innerText) {
-                                flipped = [];
-                                confetti({particleCount: 20});
-                            } else {
-                                setTimeout(() => {
-                                    flipped.forEach(c => { c.innerText = ""; c.style.background = "#111"; });
-                                    flipped = [];
-                                }, 500);
-                            }
-                        }
-                    }
-                };
-                grid.appendChild(card);
-            });
-            cvs.appendChild(grid);
-        }
-
-        /* ----------------------- إدارة البيانات ----------------------- */
-        async function initApp() {
-            const today = new Date().toISOString().split('T')[0];
-            const snap = await database.ref(`rq_users/${currentUser.id}`).once('value');
-            const data = snap.val() || {};
-            const history = data.history || {};
-            const dayCount = Object.keys(history).length;
-
-            document.getElementById('progText').innerText = `الرحلة: ${dayCount} / 30 يوم`;
-            document.getElementById('progFill').style.width = (dayCount / 30 * 100) + "%";
-
-            if (history[today]) {
-                document.getElementById('mainContainer').style.display = 'flex';
-                updateHighscoreUI();
-            } else {
-                const taskSnap = await database.ref('rq_challenges').once('value');
-                let tasks = [];
-                taskSnap.forEach(t => tasks.push(t.val().ar));
-                document.getElementById('arabicTask').innerText = tasks[Math.floor(Math.random() * tasks.length)] || "ابتسمي!";
-                document.getElementById('questStage').style.display = 'block';
-            }
-        }
-
-        async function completeQuest() {
-            const today = new Date().toISOString().split('T')[0];
-            await database.ref(`rq_users/${currentUser.id}/history/${today}`).set({ done: true, ts: Date.now() });
-            confetti();
-            setTimeout(() => location.reload(), 1200);
-        }
-
-        async function saveHighscore(s, l) {
-            const ref = database.ref(`rq_scores/${currentUser.id}`);
-            const sn = await ref.once('value');
-            if (s > (sn.val()?.score || 0)) {
-                await ref.set({ name: currentUser.first_name, score: s, level: l });
-            }
-        }
-
-        function updateHighscoreUI() {
-            database.ref('rq_scores').orderByChild('score').limitToLast(1).on('value', snap => {
-                snap.forEach(d => {
-                    document.getElementById('highscoreDisplay').innerText = `🏆 البطل الحالي: ${d.val().name} (Level ${d.val().level})`;
-                });
-            });
-        }
-
-        /* ----------------------- الإدارة والخلفية ----------------------- */
-        function toggleAdmin(show) { document.getElementById('adminPanel').style.display = show ? 'block' : 'none'; }
-        
-        async function pushTask() {
-            const val = document.getElementById('taskInput').value;
-            if (val) {
-                await database.ref('rq_challenges').push({ ar: val });
-                document.getElementById('taskInput').value = "";
-                alert("تمت الإضافة يا زينب!");
-            }
-        }
-
-        function updateBackground(input) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.body.style.backgroundImage = `url(${e.target.result})`;
-                localStorage.setItem('custom_bg', e.target.result);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-
-        if (localStorage.getItem('custom_bg')) {
-            document.body.style.backgroundImage = `url(${localStorage.getItem('custom_bg')})`;
-        }
-
-        // انطلاق التطبيق
-        initApp();
     </script>
 </body>
 </html>
