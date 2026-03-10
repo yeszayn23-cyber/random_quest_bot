@@ -9,32 +9,48 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Amiri+Quran&family=Caveat:wght@700&display=swap');
-        :root { --gold: #ffcf4d; --pink: #ff75c3; --glass: rgba(255, 255, 255, 0.05); }
-        body { font-family: 'Montserrat', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; background: #050518 no-repeat center center/cover; color: white; overflow: hidden; text-align: center; transition: 0.5s; }
-        .brand-name { margin-top: 25px; font-size: 2.5rem; font-weight: 900; background: linear-gradient(45deg, var(--gold), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5)); }
-        .top-controls { position: absolute; top: 15px; width: 90%; display: flex; justify-content: space-between; z-index: 100; }
-        .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; border: none; }
-        .challenge-card { background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 20px; border-radius: 30px; width: 85%; margin-top: 30px; min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
-        .progress-container { width: 85%; margin-top: 20px; text-align: center; }
-        .progress-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 8px; }
-        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #ff8c00); width: 0%; transition: 1.5s; }
-        .btn-main { background: linear-gradient(135deg, var(--gold), #ff8c00); color: black; border: none; padding: 15px 60px; border-radius: 50px; font-size: 1.5rem; font-family: 'Caveat', cursive; font-weight: bold; margin-top: 30px; cursor: pointer; }
-        .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right; }
-        .admin-sec { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Caveat:wght@700&display=swap');
+        :root { --gold: #ffcf4d; --pink: #ff75c3; --neon-green: #39ff14; --neon-blue: #00ffff; --bg-dark: #02020a; }
+        body { font-family: 'Montserrat', sans-serif; margin: 0; height: 100vh; display: flex; flex-direction: column; align-items: center; background: var(--bg-dark) no-repeat center center/cover; color: white; overflow: hidden; text-align: center; }
         
-        #gameSection { display: none; width: 85%; margin-top: 20px; animation: fadeIn 0.5s; }
-        #activeGameContainer { background: rgba(255,255,255,0.05); border-radius: 20px; min-height: 200px; position: relative; overflow: hidden; border: 1px solid var(--glass); display: flex; align-items: center; justify-content: center; }
-        .score-info { margin-top: 10px; font-size: 0.8rem; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 12px; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* UI Elements */
+        .brand-name { margin-top: 25px; font-size: 2.5rem; font-weight: 900; background: linear-gradient(45deg, var(--neon-green), var(--neon-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px var(--neon-green)); }
+        .top-controls { position: absolute; top: 15px; width: 90%; display: flex; justify-content: space-between; z-index: 100; }
+        .icon-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 10px; border-radius: 50%; width: 42px; height: 42px; cursor: pointer; backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; }
+        .challenge-card { background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); padding: 20px; border-radius: 30px; width: 85%; margin-top: 30px; min-height: 120px; display: flex; flex-direction: column; justify-content: center; box-shadow: 0 0 20px rgba(57, 255, 20, 0.2); }
+        
+        /* Progress */
+        .progress-container { width: 85%; margin-top: 20px; text-align: center; }
+        .progress-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); width: 0%; transition: 1.5s; box-shadow: 0 0 10px var(--neon-green); }
+
+        /* Games UI */
+        #gameSection { display: none; width: 90%; margin-top: 20px; animation: fadeIn 0.5s; }
+        #activeGameContainer { background: rgba(0, 0, 0, 0.8); border-radius: 20px; min-height: 250px; position: relative; overflow: hidden; border: 2px solid rgba(57, 255, 20, 0.3); box-shadow: 0 0 15px rgba(57, 255, 20, 0.1); }
+        
+        /* Pepe Jump Specific */
+        #pepeGame { width: 100%; height: 250px; position: relative; display: none; }
+        #pepe { width: 35px; height: 35px; position: absolute; bottom: 10px; left: 30px; font-size: 2rem; filter: drop-shadow(0 0 8px var(--neon-green)); transition: bottom 0.1s; z-index: 10; }
+        .obstacle { width: 25px; height: 25px; position: absolute; bottom: 10px; left: 100%; font-size: 1.5rem; filter: drop-shadow(0 0 8px var(--neon-blue)); animation: moveObstacle linear infinite; }
+        #gameScore { position: absolute; top: 10px; right: 10px; font-size: 1rem; color: var(--neon-green); font-family: monospace; }
+        @keyframes moveObstacle { from { left: 100%; } to { left: -50px; } }
+
+        /* General Styling */
+        .btn-main { background: linear-gradient(135deg, var(--neon-green), var(--neon-blue)); color: black; border: none; padding: 15px 60px; border-radius: 50px; font-size: 1.5rem; font-family: 'Caveat', cursive; font-weight: bold; margin-top: 30px; cursor: pointer; box-shadow: 0 0 15px var(--neon-green); }
+        .btn-main:disabled { opacity: 0.5; }
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right; border: 1px solid var(--neon-green); }
+        .admin-sec { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        input { width: 90%; padding: 10px; margin: 5px 0; border-radius: 8px; border: none; background: rgba(255,255,255,0.05); color: white; border: 1px solid rgba(255,255,255,0.1); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+        th, td { border-bottom: 1px solid #222; padding: 8px; text-align: center; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
-<body id="mainBody">
+<body onclick="handleGlobalClick()">
 
     <div class="top-controls">
-        <button id="bgBtn" class="icon-btn" onclick="document.getElementById('bgInput').click()" style="display:none;">🖼️</button>
-        <button id="adminBtn" class="icon-btn" onclick="openAdmin()" style="display:none;">⚙️</button>
+        <button id="bgBtn" class="icon-btn" onclick="document.getElementById('bgInput').click(); event.stopPropagation();" style="display:none;">🖼️</button>
+        <button id="adminBtn" class="icon-btn" onclick="openAdmin(); event.stopPropagation();" style="display:none;">⚙️</button>
     </div>
     <input type="file" id="bgInput" hidden accept="image/*" onchange="uploadBG(this)">
 
@@ -49,55 +65,76 @@
     </div>
 
     <div id="gameSection">
-        <h3 style="color:var(--gold); font-family: 'Caveat', cursive; font-size: 1.3rem;">ألعاب الانتظار 🎮</h3>
-        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;">
-            <button class="icon-btn" onclick="initMemoryGame()">🧠</button>
-            <button class="icon-btn" onclick="initXOGame()">❌</button>
-            <button class="icon-btn" onclick="initBubbleGame()">🫧</button>
+        <h3 style="color:var(--neon-green); font-family: 'Caveat', cursive; font-size: 1.3rem; filter: drop-shadow(0 0 5px var(--neon-green));">ألعاب الانتظار 🎮</h3>
+        <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 15px;">
+            <button class="icon-btn" onclick="initMemoryGame(); event.stopPropagation();">🧠</button>
+            <button class="icon-btn" onclick="initPepeGame(); event.stopPropagation();">🐸</button>
+            <button class="icon-btn" onclick="initBubbleGame(); event.stopPropagation();">🫧</button>
         </div>
-        <div id="activeGameContainer"></div>
-        <div class="score-info">
-            <div id="personalBest">أعلى سكور لكِ: 0</div>
-            <div id="globalLeader" style="color:var(--gold); font-weight:bold; margin-top:4px;">المتصدر: جاري التحميل...</div>
+        <div id="activeGameContainer">
+            <div id="pepeGame">
+                <div id="pepe">🐸</div>
+                <div id="obstacle" class="obstacle">✈️</div>
+                <div id="gameScore">0</div>
+            </div>
+        </div>
+        <div class="score-info" style="font-size: 0.8rem; margin-top:10px;">
+            <div id="personalBest">أعلى سكور: 0</div>
+            <div id="globalLeader" style="color:var(--neon-green); margin-top:4px;">المتصدر: ...</div>
         </div>
     </div>
 
     <div class="progress-container">
-        <span id="progressText" style="font-size: 0.85rem; color: var(--gold);">إنجازك: 0 / 30 🔥</span>
+        <span id="progressText" style="font-size: 0.85rem; color: var(--neon-green);">إنجازك: 0 / 30 🔥</span>
         <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
     </div>
-
     <div id="statusArea" style="display:none; margin-top: 15px;">
-        <div id="nextQuestTimer" style="font-family: monospace; color: var(--pink); font-weight: bold;">00:00:00</div>
+        <div id="nextQuestTimer" style="font-family: monospace; color: var(--pink); font-weight: bold; filter: drop-shadow(0 0 5px var(--pink));">00:00:00</div>
     </div>
 
     <div id="adminPanel" class="modal">
-        <button onclick="closeAdmin()" style="color:#ff4757; background:none; border:none; font-size:1.5rem; float:left;">×</button>
-        <h2 style="color:var(--gold); text-align:center;">لوحة الإدارة 🛠</h2>
-        <div class="admin-sec" id="userStatsList"></div>
+        <button onclick="closeAdmin(); event.stopPropagation();" style="color:#ff4757; background:none; border:none; font-size:2rem; float:left;">×</button>
+        <h2 style="color:var(--neon-green); text-align:center;">لوحة التحكم 🛠</h2>
+        <div class="admin-sec">
+            <h3>➕ إضافة تحدي</h3>
+            <input type="text" id="newAr" placeholder="التحدي (عربي)">
+            <input type="text" id="newEn" placeholder="Challenge (English)">
+            <button onclick="addNewChallenge()" style="background:var(--neon-green); border:none; padding:10px; border-radius:8px; margin-top:10px; font-weight:bold; color:black;">حفظ</button>
+        </div>
+        <div class="admin-sec">
+            <h3>📋 التحديات الحالية</h3>
+            <div id="challengeListAdmin" style="max-height:150px; overflow-y:auto;"></div>
+        </div>
+        <div class="admin-sec">
+            <h3>👥 سجل الزوار</h3>
+            <div style="max-height:200px; overflow-y:auto;">
+                <table id="usersTable">
+                    <thead><tr><th>الاسم</th><th>إنجاز</th><th>آخر ظهور</th></tr></thead>
+                    <tbody id="usersListAdmin"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 
     <script>
         const FIREBASE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
-        const MY_ID = 8421694319; // الأيدي الخاص بكِ للتحكم
+        const MY_ID = 8421694319; // الأيدي الخاص بكِ
         const userId = tg.initDataUnsafe.user?.id || 8421694319;
         const userName = tg.initDataUnsafe.user?.first_name || "لاعب مجهول";
         
         let timerInterval, activeGame = "", currentScore = 0;
-        let isSaving = false;
+        let isJumping = false, pepeGameInterval, obstacleSpeed = 2.0;
 
         firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
 
-        // إظهار أزرار التحكم لكِ فقط
         if(userId == MY_ID) {
             document.getElementById('bgBtn').style.display = 'flex';
             document.getElementById('adminBtn').style.display = 'flex';
         }
 
         function uploadBG(input) {
-            if(userId != MY_ID) return;
             const file = input.files[0];
             const reader = new FileReader();
             reader.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; localStorage.setItem('userBG', e.target.result); };
@@ -106,65 +143,36 @@
         if(localStorage.getItem('userBG')) document.body.style.backgroundImage = `url(${localStorage.getItem('userBG')})`;
 
         async function loadApp() {
-            clearInterval(timerInterval);
-            const today = new Date().toISOString().split('T')[0]; // مفتاح اليوم YYYY-MM-DD
-            
-            const snapTasks = await db.ref('rq_challenges').once('value');
+            const today = new Date().toISOString().split('T')[0];
             const snapUser = await db.ref(`rq_users/${userId}`).once('value');
-            const userData = snapUser.val() || {};
-            const history = userData.history || {};
+            const history = snapUser.val()?.history || {};
             
-            // تحديث شريط التقدم
             const completedCount = Object.keys(history).length;
             document.getElementById('progressFill').style.width = (Math.min(completedCount, 30) / 30 * 100) + "%";
             document.getElementById('progressText').innerText = `إنجازك: ${completedCount} / 30 🔥`;
 
-            // التحقق من تاريخ اليوم في الهيستوري لمنع التكرار
-            if (history[today]) {
-                showDoneUI(history[today].doneTime);
-                return;
-            }
+            if (history[today]) { showDoneUI(history[today].doneTime); return; }
 
-            // إذا لم ينجز تحدي اليوم
+            const snapTasks = await db.ref('rq_challenges').once('value');
             let allTasks = []; snapTasks.forEach(t => allTasks.push({...t.val(), key: t.key}));
             const doneArs = Object.values(history).map(h => h.taskAr);
             let available = allTasks.filter(t => !doneArs.includes(t.ar));
             if(available.length === 0) available = allTasks;
 
-            const chosen = available[Math.floor(Math.random() * available.length)];
+            const chosen = available[Math.floor(Math.random() * (available.length || 1))] || {ar:"لا توجد تحديات حالياً", en:"No challenges yet"};
             document.getElementById('dailyTask').innerText = chosen.ar;
             document.getElementById('dailyTaskEn').innerText = chosen.en;
             window.currentTaskAr = chosen.ar;
-            
             document.getElementById('questUI').style.display = 'block';
             document.getElementById('gameSection').style.display = 'none';
-            document.getElementById('statusArea').style.display = 'none';
         }
 
         async function handleDone() {
-            if(isSaving) return;
-            isSaving = true;
             const now = Date.now();
             const today = new Date().toISOString().split('T')[0];
-            
-            document.getElementById('doneBtn').disabled = true;
-            document.getElementById('doneBtn').innerText = "جاري الحفظ...";
-
             confetti({ particleCount: 150, spread: 70 });
-
-            // الحفظ باستخدام تاريخ اليوم كمفتاح لضمان عدم التكرار نهائياً
-            await db.ref(`rq_users/${userId}/history/${today}`).set({
-                done: true,
-                taskAr: window.currentTaskAr,
-                doneTime: now
-            });
-
-            await db.ref(`rq_users/${userId}/info`).update({
-                name: userName,
-                lastSeen: now
-            });
-
-            isSaving = false;
+            await db.ref(`rq_users/${userId}/history/${today}`).set({ done: true, taskAr: window.currentTaskAr, doneTime: now });
+            await db.ref(`rq_users/${userId}/info`).update({ name: userName, lastSeen: now });
             showDoneUI(now);
         }
 
@@ -173,6 +181,7 @@
             document.getElementById('gameSection').style.display = 'block';
             document.getElementById('statusArea').style.display = 'block';
             updateTimer(doneTime);
+            if(timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => updateTimer(doneTime), 1000);
         }
 
@@ -185,38 +194,98 @@
             document.getElementById('nextQuestTimer').innerText = `التحدي القادم خلال: ${h}:${m}:${s}`;
         }
 
-        async function syncScore(game, score) {
-            activeGame = game;
-            const ref = db.ref(`rq_leaderboards/${game}`);
-            const userRef = ref.child(userId);
-            const snap = await userRef.once('value');
-            if (score > (snap.val()?.score || 0)) {
-                await userRef.set({ name: userName, score: score });
-            }
-            ref.orderByChild('score').limitToLast(1).on('value', s => {
-                s.forEach(child => {
-                    document.getElementById('globalLeader').innerText = `المتصدر في ${game}: ${child.val().name} (${child.val().score})`;
-                });
-            });
-            userRef.on('value', s => { document.getElementById('personalBest').innerText = `أعلى سكور لكِ في ${game}: ${s.val()?.score || 0}`; });
+        // --- نظام الألعاب الموحد ---
+        function clearGameContainer() {
+            activeGame = ""; 
+            if(pepeGameInterval) clearInterval(pepeGameInterval);
+            document.getElementById('pepeGame').style.display = 'none';
+            document.getElementById('activeGameContainer').innerHTML = "";
+            // إعادة بناء حاوية لعبة بيبي إذا تم حذفها
+            document.getElementById('activeGameContainer').innerHTML = `
+                <div id="pepeGame">
+                    <div id="pepe">🐸</div>
+                    <div id="obstacle" class="obstacle">✈️</div>
+                    <div id="gameScore">0</div>
+                </div>
+            `;
         }
 
-        // --- ألعاب الانتظار ---
+        // --- لعبة بيبي جـمب (Pepe Jump) ---
+        function initPepeGame() {
+            clearGameContainer();
+            activeGame = "Pepe Jump"; currentScore = 0; obstacleSpeed = 2.0;
+            syncScore("Pepe Jump", 0);
+            const gameArea = document.getElementById('pepeGame');
+            gameArea.style.display = 'block';
+            const pepe = document.getElementById('pepe');
+            const obstacle = document.getElementById('obstacle');
+            const scoreDisplay = document.getElementById('gameScore');
+
+            obstacle.style.animationDuration = obstacleSpeed + "s";
+
+            pepeGameInterval = setInterval(() => {
+                currentScore++;
+                scoreDisplay.innerText = currentScore;
+                
+                // زيادة السرعة تدريجياً
+                if(currentScore % 100 === 0 && obstacleSpeed > 0.8) {
+                    obstacleSpeed -= 0.1;
+                    obstacle.style.animationDuration = obstacleSpeed + "s";
+                }
+
+                // فحص الاصطدام
+                let pepeBottom = parseInt(window.getComputedStyle(pepe).getPropertyValue("bottom"));
+                let obstacleLeft = parseInt(window.getComputedStyle(obstacle).getPropertyValue("left"));
+
+                if(obstacleLeft < 60 && obstacleLeft > 30 && pepeBottom <= 35) {
+                    // اصطدام!
+                    clearInterval(pepeGameInterval);
+                    syncScore("Pepe Jump", currentScore);
+                    obstacle.style.animation = "none";
+                    confetti({ particleCount: 50, colors: ['#ff4757'] });
+                    pepe.innerText = "💥";
+                    setTimeout(() => { pepe.innerText = "🐸"; initPepeGame(); }, 1500);
+                }
+            }, 50);
+        }
+
+        function handleGlobalClick() {
+            if(activeGame === "Pepe Jump" && !isJumping) {
+                isJumping = true;
+                const pepe = document.getElementById('pepe');
+                pepe.style.bottom = "100px";
+                document.body.style.boxShadow = "inset 0 0 20px var(--neon-green)"; // تأثير إضاءة عند القفز
+                setTimeout(() => { 
+                    pepe.style.bottom = "10px"; isJumping = false; 
+                    document.body.style.boxShadow = "none";
+                }, 400);
+            }
+        }
+
+        // --- باقي الألعاب ---
         function initMemoryGame() {
-            currentScore = 0; syncScore("الذاكرة", 0);
+            clearGameContainer();
+            activeGame = "الذاكرة"; currentScore = 0; syncScore("الذاكرة", 0);
             const container = document.getElementById('activeGameContainer');
-            const icons = ['💎','👑','🌟','🌙','💎','👑','🌟','🌙'].sort(() => Math.random()-0.5);
+            const allIcons = ['💎','👑','🌟','🌙','🎨','🔮','🚀','🌈','🍀','🦋','🍎','🍕','🎭','🎸','🎲','🧩','🧸','🎈'];
+            const selected = allIcons.sort(() => Math.random() - 0.5).slice(0, 8);
+            const gameIcons = [...selected, ...selected].sort(() => Math.random() - 0.5);
             container.innerHTML = `<div style="display:grid; grid-template-columns: repeat(4, 1fr); gap: 8px;"></div>`;
             let flipped = [];
-            icons.forEach(icon => {
+            gameIcons.forEach(icon => {
                 const card = document.createElement('div');
-                card.style = "width:40px; height:40px; background:var(--glass); display:flex; align-items:center; justify-content:center; font-size:1.2rem; border-radius:8px; cursor:pointer;";
-                card.onclick = function() {
+                card.style = "width:42px; height:42px; background:var(--glass); display:flex; align-items:center; justify-content:center; font-size:1.4rem; border-radius:10px; cursor:pointer; border:1px solid rgba(255,255,255,0.1);";
+                card.onclick = function(e) { e.stopPropagation();
                     if (flipped.length < 2 && !this.innerText) {
                         this.innerText = icon; flipped.push(this);
                         if (flipped.length === 2) {
-                            if (flipped[0].innerText === flipped[1].innerText) { currentScore += 10; syncScore("الذاكرة", currentScore); flipped = []; }
-                            else setTimeout(() => { flipped.forEach(c => c.innerText = ''); flipped = []; }, 500);
+                            if (flipped[0].innerText === flipped[1].innerText) { 
+                                currentScore += 10; syncScore("الذاكرة", currentScore); 
+                                flipped.forEach(c => c.style.background = "rgba(57, 255, 20, 0.2)");
+                                flipped = []; 
+                            } else {
+                                setTimeout(() => { flipped.forEach(c => c.innerText = ''); flipped = []; }, 500);
+                            }
                         }
                     }
                 };
@@ -224,45 +293,59 @@
             });
         }
 
-        function initXOGame() {
-            syncScore("XO", 0);
-            const container = document.getElementById('activeGameContainer');
-            container.innerHTML = `<div style="display:grid; grid-template-columns: repeat(3, 1fr); gap: 5px;"></div>`;
-            let board = ["","","","","","","","",""];
-            for(let i=0; i<9; i++) {
-                const cell = document.createElement('div');
-                cell.style = "width:50px; height:50px; background:var(--glass); display:flex; align-items:center; justify-content:center; font-size:1.2rem; border-radius:8px; cursor:pointer;";
-                cell.onclick = function() {
-                    if(!board[i]) {
-                        board[i] = "X"; this.innerText = "❌";
-                        let empty = board.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
-                        if(empty.length > 0) {
-                            let m = empty[Math.floor(Math.random()*empty.length)];
-                            board[m] = "O"; container.firstChild.children[m].innerText = "⭕";
-                        }
-                    }
-                };
-                container.firstChild.appendChild(cell);
-            }
-        }
-
         function initBubbleGame() {
-            currentScore = 0; syncScore("الفقاعات", 0);
+            clearGameContainer();
+            activeGame = "الفقاعات"; currentScore = 0; syncScore("الفقاعات", 0);
             const container = document.getElementById('activeGameContainer'); container.innerHTML = "";
-            const interval = setInterval(() => {
-                if(activeGame !== "الفقاعات" || document.getElementById('gameSection').style.display === 'none') return clearInterval(interval);
+            pepeGameInterval = setInterval(() => {
+                if(activeGame !== "الفقاعات" || document.getElementById('gameSection').style.display === 'none') return clearInterval(pepeGameInterval);
                 const b = document.createElement('div');
-                const size = Math.random()*25+15;
-                b.style = `position:absolute; width:${size}px; height:${size}px; background:var(--pink); border-radius:50%; left:${Math.random()*85}%; top:${Math.random()*85}%; opacity:0.6; cursor:pointer; transition:0.3s;`;
-                b.onclick = function() { currentScore++; syncScore("الفقاعات", currentScore); this.remove(); };
+                const size = Math.random()*35+15;
+                b.style = `position:absolute; width:${size}px; height:${size}px; background:radial-gradient(circle, var(--pink), transparent); border-radius:50%; left:${Math.random()*80}%; top:${Math.random()*80}%; cursor:pointer; filter:drop-shadow(0 0 5px var(--pink));`;
+                b.onclick = function(e) { e.stopPropagation(); currentScore++; syncScore("الفقاعات", currentScore); this.remove(); };
                 container.appendChild(b);
-                setTimeout(() => { if(b.parentNode) b.remove(); }, 2000);
-            }, 700);
+                setTimeout(() => { if(b.parentNode) b.remove(); }, 1800);
+            }, 650);
         }
 
-        function openAdmin() { if(userId == MY_ID) document.getElementById('adminPanel').style.display = 'block'; }
+        async function syncScore(game, score) {
+            const ref = db.ref(`rq_leaderboards/${game}`);
+            const userRef = ref.child(userId);
+            const snap = await userRef.once('value');
+            if (score > (snap.val()?.score || 0)) await userRef.set({ name: userName, score: score });
+            ref.orderByChild('score').limitToLast(1).on('value', s => {
+                s.forEach(child => document.getElementById('globalLeader').innerText = `المتصدر في ${game}: ${child.val().name} (${child.val().score})`);
+            });
+            userRef.on('value', s => document.getElementById('personalBest').innerText = `أعلى سكور لكِ: ${s.val()?.score || 0}`);
+        }
+
+        // --- لوحة الإدارة ---
+        async function openAdmin() {
+            document.getElementById('adminPanel').style.display = 'block';
+            db.ref('rq_challenges').on('value', snap => {
+                const list = document.getElementById('challengeListAdmin'); list.innerHTML = "";
+                snap.forEach(t => {
+                    list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:8px; border-bottom:1px solid #333;">
+                        <span style="font-size:0.8rem;">${t.val().ar}</span>
+                        <button onclick="deleteChallenge('${t.key}')" style="background:#ff4757; border:none; color:white; border-radius:4px; padding:2px 8px;">حذف</button>
+                    </div>`;
+                });
+            });
+            db.ref('rq_users').on('value', snap => {
+                const list = document.getElementById('usersListAdmin'); list.innerHTML = "";
+                snap.forEach(u => {
+                    const d = u.val();
+                    list.innerHTML += `<tr><td>${d.info?.name || 'مجهول'}</td><td>${Object.keys(d.history || {}).length}</td><td>${new Date(d.info?.lastSeen).toLocaleDateString('ar-DZ')}</td></tr>`;
+                });
+            });
+        }
         function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
-        
+        async function addNewChallenge() {
+            const ar = document.getElementById('newAr').value, en = document.getElementById('newEn').value;
+            if(ar && en) { await db.ref('rq_challenges').push({ ar, en }); document.getElementById('newAr').value = ""; document.getElementById('newEn').value = ""; }
+        }
+        async function deleteChallenge(key) { if(confirm("حذف؟")) await db.ref(`rq_challenges/${key}`).remove(); }
+
         loadApp();
     </script>
 </body>
