@@ -115,33 +115,29 @@
             position: relative;
             overflow: hidden;
             box-shadow: inset 0 0 30px rgba(57, 255, 20, 0.2), 0 0 20px rgba(0,0,0,0.5);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
         }
 
-        /* 2048 Game Styles */
-        .grid-2048 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            background: rgba(255, 255, 255, 0.1);
-            padding: 8px;
-            border-radius: 12px;
+        /* Pepe Game Assets */
+        #pepe {
+            width: 45px;
+            height: 45px;
+            position: absolute;
+            bottom: 15px;
+            left: 45px;
+            font-size: 2.5rem;
+            z-index: 100;
+            transition: bottom 0.2s cubic-bezier(0.1, 0.5, 0.1, 1);
+            filter: drop-shadow(0 0 8px var(--neon-green));
         }
 
-        .tile-2048 {
-            width: 55px;
-            height: 55px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-weight: bold;
-            font-size: 1.2rem;
-            transition: all 0.15s ease-out;
+        .obs {
+            position: absolute;
+            bottom: 15px;
+            right: -60px;
+            width: 30px;
+            height: 30px;
+            font-size: 1.6rem;
+            z-index: 90;
         }
 
         .score-box {
@@ -161,7 +157,6 @@
             gap: 10px;
             padding: 15px;
             height: 100%;
-            width: 100%;
         }
 
         .mem-card {
@@ -328,7 +323,7 @@
     <div id="gameSection">
         <div class="game-tabs">
             <button class="icon-btn" onclick="startMemory(); event.stopPropagation();">🧠</button>
-            <button class="icon-btn" onclick="start2048(); event.stopPropagation();">🔢</button>
+            <button class="icon-btn" onclick="startPepe(); event.stopPropagation();">🐸</button>
             <button class="icon-btn" onclick="startBubbles(); event.stopPropagation();">🫧</button>
         </div>
         <div id="activeGameDisplay"></div>
@@ -393,147 +388,54 @@
             gameLoops.forEach(clearInterval);
             gameLoops = [];
             document.getElementById('activeGameDisplay').innerHTML = "";
-            window.onkeydown = null; // تنظيف أحداث الكيبورد
         }
 
-        // --- 1. لعبة 2048 ---
-        let board2048 = [];
-        let score2048 = 0;
-
-        function start2048() {
-            stopAll();
-            gameActive = "2048";
-            score2048 = 0;
-            board2048 = Array(16).fill(0);
-            
+        // --- 1. لعبة بيبي السريعة ---
+        function startPepe() {
+            stopAll(); gameActive = "pepe";
             const stage = document.getElementById('activeGameDisplay');
-            stage.innerHTML = `
-                <div class="score-box" id="s2048">Score: 0</div>
-                <div class="grid-2048" id="grid2048"></div>
-                <div style="font-size:0.7rem; color:var(--pink); margin-top:5px;">Swipe or use Arrows to merge!</div>
-            `;
-            
-            addRandomTile();
-            addRandomTile();
-            updateBoardUI();
+            stage.innerHTML = `<div class="score-box" id="ps">0</div><div id="pepe">🐸</div>`;
+            let score = 0;
+
+            function spawn() {
+                if(gameActive !== "pepe") return;
+                const o = document.createElement('div');
+                o.className = 'obs'; o.innerHTML = "🌵";
+                stage.appendChild(o);
+                
+                let x = -60;
+                let m = setInterval(() => {
+                    x += 7; // السرعة المطلوبة
+                    o.style.right = x + "px";
+                    
+                    let pTop = document.getElementById('pepe').offsetTop;
+                    // Hitbox دقيق جداً
+                    if(x > (stage.offsetWidth - 85) && x < (stage.offsetWidth - 45) && pTop > 200) {
+                        clearInterval(m); 
+                        alert("خسرت يا بطل! سكورك: " + score);
+                        saveHighScore(score);
+                        startPepe();
+                    }
+                    
+                    if(x > stage.offsetWidth) {
+                        clearInterval(m); o.remove();
+                        score++; document.getElementById('ps').innerText = score;
+                    }
+                }, 20);
+                gameLoops.push(m);
+                setTimeout(spawn, Math.random() * 1200 + 900);
+            }
+            spawn();
             getTopScore();
-
-            // أحداث الكيبورد
-            window.onkeydown = (e) => {
-                if(gameActive !== "2048") return;
-                let moved = false;
-                if(e.key === "ArrowUp") moved = move2048('up');
-                if(e.key === "ArrowDown") moved = move2048('down');
-                if(e.key === "ArrowLeft") moved = move2048('left');
-                if(e.key === "ArrowRight") moved = move2048('right');
-                
-                if(moved) {
-                    addRandomTile();
-                    updateBoardUI();
-                    if(isGameOver()) {
-                        alert("انتهت اللعبة! مجموع نقاطك: " + score2048);
-                        saveHighScore(score2048);
-                    }
-                }
-            };
-
-            // دعم السحب (Touch Swipe) للموبايل
-            let touchStartX, touchStartY;
-            stage.addEventListener('touchstart', (e) => {
-                touchStartX = e.touches[0].clientX;
-                touchStartY = e.touches[0].clientY;
-            }, {passive: true});
-
-            stage.addEventListener('touchend', (e) => {
-                if(gameActive !== "2048") return;
-                let dx = e.changedTouches[0].clientX - touchStartX;
-                let dy = e.changedTouches[0].clientY - touchStartY;
-                let moved = false;
-                if(Math.abs(dx) > Math.abs(dy)) {
-                    if(dx > 30) moved = move2048('right');
-                    else if(dx < -30) moved = move2048('left');
-                } else {
-                    if(dy > 30) moved = move2048('down');
-                    else if(dy < -30) moved = move2048('up');
-                }
-                if(moved) { addRandomTile(); updateBoardUI(); }
-            }, {passive: true});
-        }
-
-        function addRandomTile() {
-            let empty = board2048.map((v, i) => v === 0 ? i : null).filter(v => v !== null);
-            if(empty.length) {
-                board2048[empty[Math.floor(Math.random() * empty.length)]] = Math.random() < 0.9 ? 2 : 4;
-            }
-        }
-
-        function updateBoardUI() {
-            const grid = document.getElementById('grid2048');
-            const colors = {
-                2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563',
-                32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61',
-                512: '#edc850', 1024: '#edc53f', 2048: '#39ff14'
-            };
-            grid.innerHTML = board2048.map(val => `
-                <div class="tile-2048" style="background:${val ? colors[val] || '#3c3a32' : 'rgba(255,255,255,0.05)'}; 
-                color:${val <= 4 ? '#776e65' : 'white'}; 
-                box-shadow: ${val ? '0 0 10px '+colors[val] : 'none'}">
-                    ${val || ''}
-                </div>
-            `).join('');
-            document.getElementById('s2048').innerText = "Score: " + score2048;
-        }
-
-        function move2048(dir) {
-            let moved = false;
-            let size = 4;
-            
-            const get = (r, c) => board2048[r * size + c];
-            const set = (r, c, v) => board2048[r * size + c] = v;
-
-            for (let i = 0; i < size; i++) {
-                let line = [];
-                for (let j = 0; j < size; j++) {
-                    let v = (dir==='up'||dir==='down') ? get(j, i) : get(i, j);
-                    if(v) line.push(v);
-                }
-                if(dir==='down'||dir==='right') line.reverse();
-                
-                let newLine = [];
-                for (let j = 0; j < line.length; j++) {
-                    if(line[j] === line[j+1]) {
-                        newLine.push(line[j] * 2);
-                        score2048 += line[j] * 2;
-                        j++;
-                        moved = true;
-                    } else {
-                        newLine.push(line[j]);
-                    }
-                }
-                while(newLine.length < size) newLine.push(0);
-                if(dir==='down'||dir==='right') newLine.reverse();
-
-                for (let j = 0; j < size; j++) {
-                    let oldV = (dir==='up'||dir==='down') ? get(j, i) : get(i, j);
-                    let newV = newLine[j];
-                    if(oldV !== newV) moved = true;
-                    if(dir==='up'||dir==='down') set(j, i, newV); else set(i, j, newV);
-                }
-            }
-            return moved;
-        }
-
-        function isGameOver() {
-            if(board2048.includes(0)) return false;
-            for(let i=0; i<16; i++) {
-                if(i%4<3 && board2048[i] === board2048[i+1]) return false;
-                if(i<12 && board2048[i] === board2048[i+4]) return false;
-            }
-            return true;
         }
 
         function handleGlobalJump() {
-            // فارغ لأن لعبة 2048 لا تستخدم القفز
+            if(gameActive === "pepe") {
+                const p = document.getElementById('pepe');
+                if(p.style.bottom === "115px") return;
+                p.style.bottom = "115px";
+                setTimeout(() => p.style.bottom = "15px", 350);
+            }
         }
 
         async function saveHighScore(s) {
@@ -719,3 +621,4 @@
     </script>
 </body>
 </html>
+
