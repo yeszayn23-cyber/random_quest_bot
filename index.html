@@ -258,6 +258,21 @@
             cursor: pointer;
             font-weight: bold;
         }
+
+        /* زر تغيير التحدي المضاف */
+        .btn-change {
+            background: transparent;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 0.8rem;
+            font-weight: bold;
+            transition: 0.3s;
+        }
     </style>
 </head>
 <body>
@@ -277,6 +292,7 @@
             <h2 id="taskAr" style="margin: 0; font-size: 1.6rem;">جاري جلب التحدي...</h2>
             <p id="taskEn" style="opacity: 0.5; font-size: 0.9rem; margin-top: 10px;">...</p>
             <button class="btn-action" style="margin-top: 25px;" onclick="markAsDone()">DONE / تم ✅</button>
+            <button id="changeBtn" class="btn-change" onclick="pickNewTask()">Changing the challenge / تغيير التحدي 🔄</button>
         </div>
     </div>
 
@@ -333,6 +349,7 @@
         firebase.initializeApp({ databaseURL: DB_URL });
         const db = firebase.database();
         let gameActive = "", gameLoops = [];
+        let currentTaskID = null;
 
         if(user.id == myID) {
             document.getElementById('bgBtn').style.display = 'flex';
@@ -346,7 +363,6 @@
             document.getElementById('activeGameDisplay').innerHTML = "";
         }
 
-        // --- 1. لعبة الذاكرة ---
         function startMemory() {
             stopAll();
             const stage = document.getElementById('activeGameDisplay');
@@ -380,7 +396,6 @@
             stage.appendChild(grid);
         }
 
-        // --- 2. لعبة الفقاعات ---
         function startBubbles() {
             stopAll();
             const stage = document.getElementById('activeGameDisplay');
@@ -395,7 +410,6 @@
             gameLoops.push(loop);
         }
 
-        // --- إدارة النظام (ADMIN) ---
         async function openAdmin() {
             document.getElementById('adminPanel').style.display = 'block';
             db.ref('rq_users').on('value', snap => {
@@ -456,6 +470,35 @@
         }
         if(localStorage.getItem('custom_bg')) document.body.style.backgroundImage = `url(${localStorage.getItem('custom_bg')})`;
 
+        async function pickNewTask() {
+            const userSnap = await db.ref(`rq_users/${user.id}`).once('value');
+            const history = userSnap.val()?.history || {};
+            const tSnap = await db.ref('rq_challenges').once('value');
+            
+            let tasks = [];
+            tSnap.forEach(t => {
+                // تصفية التحديات التي لم ينجزها المستخدم سابقاً
+                if(!history[t.key]) {
+                    tasks.push({id: t.key, ...t.val()});
+                }
+            });
+
+            if(tasks.length > 0) {
+                // استبعاد التحدي الحالي عند التغيير
+                let filtered = currentTaskID ? tasks.filter(t => t.id !== currentTaskID) : tasks;
+                let finalPool = filtered.length > 0 ? filtered : tasks;
+                let selected = finalPool[Math.floor(Math.random() * finalPool.length)];
+                
+                currentTaskID = selected.id;
+                document.getElementById('taskAr').innerText = selected.ar;
+                document.getElementById('taskEn').innerText = selected.en;
+                document.getElementById('questSection').style.display = 'block';
+            } else {
+                document.getElementById('taskAr').innerText = "انتهت كل التحديات! 🏆";
+                document.getElementById('changeBtn').style.display = 'none';
+            }
+        }
+
         async function initApp() {
             const today = new Date().toISOString().split('T')[0];
             const snap = await db.ref(`rq_users/${user.id}`).once('value');
@@ -471,20 +514,19 @@
                 document.getElementById('questSection').style.display = 'none';
                 startCountdown(history[today].time);
             } else {
-                const tSnap = await db.ref('rq_challenges').once('value');
-                let tasks = [];
-                tSnap.forEach(t => tasks.push(t.val()));
-                let finalTask = tasks[Math.floor(Math.random() * tasks.length)] || { ar: "قم بتمارين ضغط!", en: "Do some pushups!" };
-                document.getElementById('taskAr').innerText = finalTask.ar;
-                document.getElementById('taskEn').innerText = finalTask.en;
-                document.getElementById('questSection').style.display = 'block';
+                pickNewTask();
             }
         }
 
         async function markAsDone() {
             const today = new Date().toISOString().split('T')[0];
             const now = Date.now();
-            await db.ref(`rq_users/${user.id}/history/${today}`).set({ done: true, time: now });
+            // تسجيل التحدي باستخدام المعرف الخاص به لضمان عدم تكراره
+            await db.ref(`rq_users/${user.id}/history/${today}`).set({ done: true, time: now, taskID: currentTaskID });
+            // تسجيل في الهيستوري العام للمستخدم لمنع ظهوره مرة أخرى
+            if(currentTaskID) {
+                await db.ref(`rq_users/${user.id}/history/${currentTaskID}`).set(true);
+            }
             await db.ref(`rq_users/${user.id}/info`).update({ name: user.first_name, lastSeen: now });
             
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
