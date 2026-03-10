@@ -9,212 +9,180 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Amiri:wght@400;700&family=Cairo:wght@300;700&display=swap');
-        
-        :root { 
-            --purple: #a18cd1; --blue: #70a1ff; --green: #7bed9f; --pink: #ffafbd; --amber: #ff9f43; --bg: #0d0d0d; 
-            --glass: rgba(255, 255, 255, 0.08);
-        }
-
-        body { 
-            font-family: 'Cairo', sans-serif; margin: 0; padding: 0; min-height: 100vh; 
-            display: flex; flex-direction: column; align-items: center; 
-            background: var(--bg); color: white; overflow-x: hidden; text-align: center;
-            background: radial-gradient(circle at top, #1a1a2e, #0d0d0d);
-        }
-
-        /* التصميم الجديد للمقدمة */
-        .header-wrapper {
-            margin-top: 40px;
-            position: relative;
-            padding: 20px;
-        }
-
-        .main-logo {
-            font-family: 'Caveat', cursive;
-            font-size: 4.2rem;
-            margin: 0;
-            background: linear-gradient(135deg, var(--purple), var(--pink), var(--amber));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 15px rgba(161, 140, 209, 0.4));
-            letter-spacing: 2px;
-            animation: floating 3s ease-in-out infinite;
-        }
-
-        .sub-logo {
-            font-family: 'Amiri', serif;
-            font-size: 1.1rem;
-            color: var(--blue);
-            letter-spacing: 5px;
-            text-transform: uppercase;
-            opacity: 0.8;
-            margin-top: -10px;
-            display: block;
-        }
-
-        .logo-decoration {
-            width: 50px; height: 2px;
-            background: linear-gradient(to right, transparent, var(--blue), transparent);
-            margin: 15px auto;
-        }
-
-        @keyframes floating {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* بقية العناصر المحسنة */
-        .main-challenge-btn { 
-            background: var(--glass); 
-            border: 1px solid rgba(255,255,255,0.1); 
-            padding: 45px 25px; border-radius: 30px; width: 85%; margin-top: 20px; 
-            min-height: 160px; display: flex; flex-direction: column; justify-content: center; 
-            backdrop-filter: blur(15px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-        }
-
-        #dailyTask { font-family: 'Amiri', serif; font-size: 1.8rem; font-weight: bold; line-height: 1.5; color: #fff; }
-        #dailyTaskEn { font-family: 'Caveat', cursive; font-size: 1.4rem; color: var(--pink); margin-top: 15px; }
-
-        .btn-fit { 
-            background: linear-gradient(45deg, var(--amber), #f0932b); 
-            color: #121212; border: none; padding: 18px 65px; 
-            border-radius: 50px; font-size: 1.5rem; font-weight: 800; 
-            margin-top: 40px; cursor: pointer; transition: 0.3s; 
-            box-shadow: 0 10px 25px rgba(255, 159, 67, 0.3);
-        }
-
-        .btn-fit:active { transform: scale(0.95); }
-        .btn-fit:disabled { background: #333; color: #777; cursor: not-allowed; box-shadow: none; opacity: 0.6; }
-
-        #statusArea { margin-top: 30px; display: none; background: rgba(123, 237, 159, 0.1); padding: 20px; border-radius: 20px; width: 80%; border: 1px solid var(--green); }
-        .timer-box { font-size: 1.2rem; color: var(--pink); font-family: monospace; margin-top: 10px; font-weight: bold; }
-
-        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; }
-        .admin-section { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; text-align: left; border: 1px solid #333; }
-        textarea { width: 100%; height: 80px; background: #222; color: #fff; border: 1px solid #444; border-radius: 10px; padding: 10px; margin-top: 10px; box-sizing: border-box; }
-        .close-admin { background: #ff4757; color: white; border: none; padding: 12px; border-radius: 10px; width: 100%; font-weight: bold; margin-bottom: 20px; }
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Amiri+Quran&display=swap');
+        :root { --purple: #a18cd1; --blue: #70a1ff; --green: #7bed9f; --pink: #ffafbd; --amber: #ff9f43; --bg: #0d0d0d; }
+        body { font-family: 'Caveat', 'Amiri Quran', serif; margin: 0; background: var(--bg); color: white; text-align: center; overflow: hidden; height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        .logo { margin-top: 25px; font-size: 3.5rem; display: flex; gap: 5px; justify-content: center; }
+        .main-challenge-btn { background: rgba(255, 255, 255, 0.03); border: 2px dashed rgba(255,255,255,0.2); padding: 30px; border-radius: 20px; width: 85%; margin-top: 20px; min-height: 100px; display: flex; flex-direction: column; justify-content: center; }
+        .btn-fit { background: var(--amber); color: #121212; border: none; padding: 15px 55px; border-radius: 15% 85% 25% 75% / 75% 25% 75% 25%; font-size: 1.7rem; font-weight: bold; margin-top: 25px; cursor: pointer; box-shadow: 6px 6px 0px rgba(0,0,0,0.5); }
+        .btn-fit:disabled { background: #333; color: #777; box-shadow: none; transform: scale(0.9); }
+        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right; font-family: sans-serif; }
+        .admin-section { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; color: #eee; }
+        th, td { border: 1px solid #333; padding: 8px; text-align: center; }
+        th { color: var(--amber); background: #222; }
+        textarea { width: 100%; height: 60px; background: #222; color: #fff; border: 1px solid #444; border-radius: 10px; padding: 10px; margin-top: 5px; resize: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div class="header-wrapper">
-        <h1 class="main-logo">RandomQuest</h1>
-        <span class="sub-logo">Daily Challenge</span>
-        <div class="logo-decoration"></div>
+    <div class="logo">
+        <span style="color:var(--purple)">ʀ</span><span style="color:var(--blue)">ᴀ</span><span style="color:var(--green)">ɴ</span><span style="color:var(--pink)">ᴅ</span>
+        <span style="color:var(--purple)">ᴏ</span><span style="color:var(--blue)">م</span><span style="color:var(--green)">ǫ</span><span style="color:var(--pink)">ᴜ</span>
     </div>
 
     <div class="main-challenge-btn">
-        <div id="dailyTask">جاري استدعاء التحدي...</div>
-        <div id="dailyTaskEn">...</div>
+        <div id="dailyTask" style="font-size: 1.8rem;">اختيار تحدي اليوم...</div>
+        <div id="dailyTaskEn" style="font-size: 1.1rem; opacity: 0.6; margin-top: 10px;">Loading...</div>
     </div>
 
-    <button id="doneBtn" class="btn-fit" onclick="handleDone()">تم الإنجاز ✅</button>
+    <button id="doneBtn" class="btn-fit" onclick="handleDone()">FIT / تم ✅</button>
 
-    <div id="statusArea">
-        <div style="color: var(--green); font-size: 1.2rem; font-weight: bold;">أحسنتِ! لقد أتممتِ مهمة اليوم 🏆</div>
-        <div class="timer-box" id="nextQuestTimer">00:00:00</div>
+    <div id="statusArea" style="display:none; margin-top:15px;">
+        <div style="color: var(--green); font-size: 1.3rem;">بطل! انتظر تحدي الغد 🚀</div>
+        <div id="nextQuestTimer" style="color:var(--pink); font-family:monospace; margin-top:5px;">00:00:00</div>
     </div>
 
     <div id="adminPanel">
-        <button class="close-admin" onclick="toggleAdmin(false)">إغلاق ×</button>
-        <h2 style="color: var(--amber);">لوحة التحكم ⚙️</h2>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="color:red; background:none; border:none; font-size:1.2rem; cursor:pointer;">إغلاق ×</button>
+        <h2 style="color: var(--amber);">لوحة الإدارة الشاملة 🛠</h2>
+        
         <div class="admin-section">
-            <h3 style="color: var(--blue);">📥 إضافة تحديات جديدة</h3>
-            <textarea id="bulkAr" placeholder="العربية (تحدي في كل سطر)..."></textarea>
-            <textarea id="bulkEn" placeholder="الإنجليزية (تحدي في كل سطر)..."></textarea>
-            <button onclick="addChallenges()" style="background:var(--green); width:100%; padding:15px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer;">حفظ البيانات</button>
+            <h3 style="color: var(--blue);">👤 سجل الزوار (Users)</h3>
+            <table id="userTable">
+                <thead><tr><th>المستخدم</th><th>إنجاز</th><th>آخر ظهور</th></tr></thead>
+                <tbody id="userTableBody"></tbody>
+            </table>
+        </div>
+
+        <div class="admin-section">
+            <h3 style="color: var(--green);">📥 إضافة تحديات بالجملة</h3>
+            <textarea id="bulkAr" placeholder="كل تحدي في سطر (بالعربية)"></textarea>
+            <textarea id="bulkEn" placeholder="Every challenge in a line (English)"></textarea>
+            <button onclick="addMultiple()" style="background:var(--green); width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold; margin-top:10px; cursor:pointer;">رفع التحديات للسحابة ☁️</button>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
-        const user = tg.initDataUnsafe.user || { id: 12345, first_name: "Guest" };
-        const userId = user.id;
-        
-        // التوكن الخاص بكِ
+        // التوكن والرابط الجديد
         const BOT_TOKEN = "8066162864:AAEcmBdXICIK6Sa4mD_91TjECBvnUCOrI48";
-        const ADMIN_ID = 8421694319; 
-        
+        const FIREBASE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
+
+        const tg = window.Telegram.WebApp;
+        const user = tg.initDataUnsafe.user || { id: 8421694319, first_name: "Admin" };
+        const userId = user.id;
         const todayStr = new Date().toISOString().split('T')[0];
-        firebase.initializeApp({ databaseURL: "https://randomquest-app-default-rtdb.firebaseio.com/" });
+
+        firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
 
-        async function loadChallenge() {
-            const challengesSnap = await db.ref('rq_challenges').once('value');
-            const historySnap = await db.ref(`rq_users/${userId}/history`).once('value');
-            let allTasks = [];
-            challengesSnap.forEach(snap => { allTasks.push({ id: snap.key, ...snap.val() }); });
+        function trackUser() {
+            db.ref(`rq_users/${userId}/info`).update({
+                name: user.first_name || "Unknown",
+                lastSeen: new Date().toLocaleString(),
+                id: userId
+            });
+        }
 
-            if (allTasks.length === 0) {
-                document.getElementById('dailyTask').innerText = "بانتظار إضافة التحديات...";
+        async function loadChallenge() {
+            const snapTasks = await db.ref('rq_challenges').once('value');
+            const snapHist = await db.ref(`rq_users/${userId}/history`).once('value');
+            
+            let tasks = [];
+            snapTasks.forEach(t => { tasks.push(t.val()); });
+            
+            if (tasks.length === 0) {
+                document.getElementById('dailyTask').innerText = "أضف تحديات من لوحة الإدارة!";
                 return;
             }
 
-            const doneIds = historySnap.exists() ? Object.values(historySnap.val()).map(h => h.taskId) : [];
-            let filtered = allTasks.filter(t => !doneIds.includes(t.id));
-            if (filtered.length === 0) filtered = allTasks;
+            const hist = snapHist.val() || {};
+            const doneAr = Object.values(hist).map(h => h.taskAr);
+            
+            let available = tasks.filter(t => !doneAr.includes(t.ar));
+            if(available.length === 0) available = tasks;
 
-            const seed = (new Date().getDate()) + parseInt(userId.toString().slice(-3));
-            const selected = filtered[seed % filtered.length];
-            document.getElementById('dailyTask').innerText = selected.ar;
-            document.getElementById('dailyTaskEn').innerText = selected.en;
-            window.currentTask = selected;
+            const dateSeed = new Date().getDate();
+            const salt = Math.abs(Math.sin(userId + dateSeed) * 1000);
+            const idx = Math.floor(salt % available.length);
+            
+            const chosen = available[idx];
+            document.getElementById('dailyTask').innerText = chosen.ar;
+            document.getElementById('dailyTaskEn').innerText = chosen.en;
+            window.currentTaskAr = chosen.ar;
         }
 
         function handleDone() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#a18cd1', '#70a1ff', '#ffafbd'] });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             db.ref(`rq_users/${userId}/history/${todayStr}`).set({
-                taskId: window.currentTask.id,
-                taskAr: window.currentTask.ar,
-                doneAt: firebase.database.ServerValue.TIMESTAMP
-            }).then(() => {
-                showDoneUI();
-                fetch(`https://api.telegram.org/bot${BOT_TOKEN}/sendMessage?chat_id=${userId}&text=🌟 مذهل! لقد أكملت تحدي اليوم: ${window.currentTask.ar}`);
-            });
+                done: true, 
+                taskAr: window.currentTaskAr,
+                time: Date.now()
+            }).then(() => showDoneUI());
         }
 
         function showDoneUI() {
             document.getElementById('doneBtn').disabled = true;
-            document.getElementById('doneBtn').innerText = "مكتمل ✨";
+            document.getElementById('doneBtn').innerText = "أتممت المهمة ✅";
             document.getElementById('statusArea').style.display = 'block';
+            
             setInterval(() => {
-                const diff = new Date().setHours(24,0,0,0) - new Date();
+                const now = new Date();
+                const tomorrow = new Date();
+                tomorrow.setHours(24,0,0,0);
+                const diff = tomorrow - now;
                 const h = Math.floor(diff/36e5).toString().padStart(2,'0');
                 const m = Math.floor((diff%36e5)/6e4).toString().padStart(2,'0');
                 const s = Math.floor((diff%6e4)/1000).toString().padStart(2,'0');
-                document.getElementById('nextQuestTimer').innerText = `التحدي القادم خلال: ${h}:${m}:${s}`;
+                document.getElementById('nextQuestTimer').innerText = `تحدي جديد خلال: ${h}:${m}:${s}`;
             }, 1000);
         }
 
-        function toggleAdmin(show) { document.getElementById('adminPanel').style.display = show ? 'block' : 'none'; }
-
-        async function addChallenges() {
-            const ar = document.getElementById('bulkAr').value.split('\n').filter(s => s.trim());
-            const en = document.getElementById('bulkEn').value.split('\n').filter(s => s.trim());
-            if(ar.length !== en.length) return alert("العدد غير متطابق!");
-            const updates = {};
-            ar.forEach((text, i) => {
-                const newId = db.ref('rq_challenges').push().key;
-                updates[newId] = { ar: text, en: en[i] };
+        function loadAdminData() {
+            db.ref('rq_users').on('value', s => {
+                const users = s.val();
+                const tbody = document.getElementById('userTableBody');
+                tbody.innerHTML = "";
+                for(let id in users) {
+                    const info = users[id].info || {name: "Guest", lastSeen: "-"};
+                    const score = users[id].history ? Object.keys(users[id].history).length : 0;
+                    tbody.innerHTML += `<tr><td>${info.name}</td><td>${score} 🔥</td><td>${info.lastSeen.split(',')[0]}</td></tr>`;
+                }
             });
-            await db.ref('rq_challenges').update(updates);
-            alert("تم حفظ التحديات بنجاح!");
-            document.getElementById('bulkAr').value = ""; document.getElementById('bulkEn').value = "";
         }
 
-        db.ref(`rq_users/${userId}/history/${todayStr}`).once('value', s => { if(s.exists()) showDoneUI(); });
+        function addMultiple() {
+            const ar = document.getElementById('bulkAr').value.split('\n').filter(x => x.trim());
+            const en = document.getElementById('bulkEn').value.split('\n').filter(x => x.trim());
+            
+            if(ar.length !== en.length) { alert("عدد الأسطر غير متساوي!"); return; }
+
+            ar.forEach((t, i) => {
+                db.ref('rq_challenges').push({ ar: t, en: en[i] });
+            });
+            alert("تم حفظ التحديات بنجاح! 🎉");
+            document.getElementById('bulkAr').value = "";
+            document.getElementById('bulkEn').value = "";
+        }
+
+        // إظهار زر الإدارة لكِ فقط
+        if(userId == 8421694319) {
+            const ab = document.createElement('button');
+            ab.innerText="⚙️";
+            ab.style="position:fixed; top:10px; right:10px; background:none; border:none; color:white; font-size:24px; opacity:0.5; cursor:pointer; z-index:2001;";
+            ab.onclick = () => {
+                document.getElementById('adminPanel').style.display = 'block';
+                loadAdminData();
+            };
+            document.body.appendChild(ab);
+        }
+
+        // تشغيل التطبيق
+        trackUser();
         loadChallenge();
-
-        if(userId == ADMIN_ID) {
-            const adminBtn = document.createElement('button');
-            adminBtn.innerHTML = "⚙️";
-            adminBtn.style.cssText = "position:fixed; top:15px; left:15px; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.2); color:white; font-size:20px; border-radius:50%; width:45px; height:45px; cursor:pointer; z-index:1001; backdrop-filter:blur(10px);";
-            adminBtn.onclick = () => toggleAdmin(true);
-            document.body.appendChild(adminBtn);
-        }
+        db.ref(`rq_users/${userId}/history/${todayStr}`).once('value', s => { 
+            if(s.exists()) showDoneUI(); 
+        });
     </script>
 </body>
 </html>
