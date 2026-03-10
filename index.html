@@ -3,72 +3,128 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>RandomQuest 🚀</title>
+    <title>ʀᴀɴᴅᴏᴍǫᴜᴇ𝑠ᴛ 🚀</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Amiri+Quran&display=swap');
-        :root { --purple: #a18cd1; --blue: #70a1ff; --green: #7bed9f; --pink: #ffafbd; --amber: #ff9f43; --bg: #0d0d0d; }
-        body { font-family: 'Caveat', 'Amiri Quran', serif; margin: 0; background: var(--bg); color: white; text-align: center; overflow: hidden; height: 100vh; display: flex; flex-direction: column; align-items: center; }
-        .logo { margin-top: 25px; font-size: 3.5rem; display: flex; gap: 5px; justify-content: center; }
-        .main-challenge-btn { background: rgba(255, 255, 255, 0.03); border: 2px dashed rgba(255,255,255,0.2); padding: 30px; border-radius: 20px; width: 85%; margin-top: 20px; min-height: 100px; display: flex; flex-direction: column; justify-content: center; }
-        .btn-fit { background: var(--amber); color: #121212; border: none; padding: 15px 55px; border-radius: 15% 85% 25% 75% / 75% 25% 75% 25%; font-size: 1.7rem; font-weight: bold; margin-top: 25px; cursor: pointer; box-shadow: 6px 6px 0px rgba(0,0,0,0.5); }
-        .btn-fit:disabled { background: #333; color: #777; box-shadow: none; transform: scale(0.9); }
-        #adminPanel { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right; font-family: sans-serif; }
-        .admin-section { background: #1a1a1a; padding: 15px; border-radius: 15px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; color: #eee; }
-        th, td { border: 1px solid #333; padding: 8px; text-align: center; }
-        th { color: var(--amber); background: #222; }
-        textarea { width: 100%; height: 60px; background: #222; color: #fff; border: 1px solid #444; border-radius: 10px; padding: 10px; margin-top: 5px; resize: none; box-sizing: border-box; }
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;700&family=Amiri+Quran&family=Montserrat:wght@800&display=swap');
+
+        :root {
+            --purple: #a18cd1; --blue: #70a1ff; --green: #7bed9f; --pink: #ffafbd; --amber: #ff9f43; --bg: #0d0d0d;
+        }
+
+        body {
+            font-family: 'Caveat', 'Amiri Quran', serif; margin: 0; padding: 0; height: 100vh;
+            display: flex; flex-direction: column; align-items: center;
+            background: var(--bg); color: white; overflow: hidden; text-align: center;
+        }
+
+        .brand-name {
+            margin-top: 35px;
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem;
+            letter-spacing: -1px;
+            background: linear-gradient(45deg, var(--purple), var(--blue), var(--pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
+            filter: drop-shadow(0px 5px 15px rgba(161, 140, 209, 0.4));
+        }
+
+        .main-challenge-btn {
+            background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255,255,255,0.1);
+            padding: 35px 20px; border-radius: 30px; width: 85%; margin-top: 25px; min-height: 130px;
+            display: flex; flex-direction: column; justify-content: center;
+            backdrop-filter: blur(10px); box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        }
+
+        /* الزر الجديد "البوقوس" */
+        .btn-fit {
+            background: linear-gradient(135deg, #ff9f43 0%, #ff6b6b 100%);
+            color: #fff; border: none; padding: 18px 70px;
+            border-radius: 50px; /* دائري بالكامل */
+            font-size: 1.8rem; font-family: 'Caveat', cursive; font-weight: bold;
+            margin-top: 40px; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(255, 159, 67, 0.3), inset 0 -4px 0 rgba(0,0,0,0.2);
+            position: relative; overflow: hidden;
+        }
+
+        .btn-fit:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(255, 159, 67, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .btn-fit:active {
+            transform: translateY(2px);
+            box-shadow: 0 5px 10px rgba(255, 159, 67, 0.2);
+        }
+
+        .btn-fit:disabled {
+            background: #2c2c2c; color: #555; box-shadow: none; transform: none; cursor: not-allowed; filter: none;
+        }
+
+        #statusArea { margin-top: 25px; display: none; }
+        .timer-box { font-size: 1.1rem; color: var(--pink); font-family: 'Montserrat', sans-serif; letter-spacing: 1px; margin-top: 10px; opacity: 0.8; }
+
+        /* لوحة التحكم */
+        #adminPanel {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000; z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right; font-family: sans-serif;
+        }
+        .admin-section { background: #111; padding: 15px; border-radius: 20px; margin-bottom: 20px; border: 1px solid #222; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 10px; }
+        th, td { border: 1px solid #222; padding: 12px; text-align: center; }
+        th { background: #1a1a1a; color: var(--amber); }
+        textarea { width: 100%; height: 70px; background: #0a0a0a; color: #fff; border: 1px solid #333; border-radius: 12px; padding: 12px; margin-top: 5px; resize: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
-    <div class="logo">
-        <span style="color:var(--purple)">ʀ</span><span style="color:var(--blue)">ᴀ</span><span style="color:var(--green)">ɴ</span><span style="color:var(--pink)">ᴅ</span>
-        <span style="color:var(--purple)">ᴏ</span><span style="color:var(--blue)">م</span><span style="color:var(--green)">ǫ</span><span style="color:var(--pink)">ᴜ</span>
-    </div>
+    <div class="brand-name">ʀᴀɴᴅᴏᴍǫᴜᴇ𝑠ᴛ</div>
 
     <div class="main-challenge-btn">
-        <div id="dailyTask" style="font-size: 1.8rem;">اختيار تحدي اليوم...</div>
-        <div id="dailyTaskEn" style="font-size: 1.1rem; opacity: 0.6; margin-top: 10px;">Loading...</div>
+        <div id="dailyTask" style="font-size: 1.8rem; font-weight: bold; line-height: 1.4;">...</div>
+        <div id="dailyTaskEn" style="font-size: 1.1rem; opacity: 0.4; margin-top: 12px; font-style: italic;">...</div>
     </div>
 
     <button id="doneBtn" class="btn-fit" onclick="handleDone()">FIT / تم ✅</button>
 
-    <div id="statusArea" style="display:none; margin-top:15px;">
-        <div style="color: var(--green); font-size: 1.3rem;">بطل! انتظر تحدي الغد 🚀</div>
-        <div id="nextQuestTimer" style="color:var(--pink); font-family:monospace; margin-top:5px;">00:00:00</div>
+    <div id="statusArea">
+        <div style="color: var(--green); font-size: 1.4rem; font-weight: bold;">أحسنتِ! نلتقي غداً 🌟</div>
+        <div class="timer-box" id="nextQuestTimer">00:00:00</div>
     </div>
 
     <div id="adminPanel">
-        <button onclick="document.getElementById('adminPanel').style.display='none'" style="color:red; background:none; border:none; font-size:1.2rem; cursor:pointer;">إغلاق ×</button>
-        <h2 style="color: var(--amber);">لوحة الإدارة الشاملة 🛠</h2>
+        <button onclick="document.getElementById('adminPanel').style.display='none'" style="color:#ff4757; background:none; border:none; font-size:1.3rem; cursor:pointer; font-weight:bold;">إغلاق ×</button>
+        <h2 style="color: var(--amber); margin-bottom: 25px;">الإدارة 🛠</h2>
         
         <div class="admin-section">
-            <h3 style="color: var(--blue);">👤 سجل الزوار (Users)</h3>
-            <table id="userTable">
-                <thead><tr><th>المستخدم</th><th>إنجاز</th><th>آخر ظهور</th></tr></thead>
-                <tbody id="userTableBody"></tbody>
-            </table>
+            <h3 style="color: var(--blue);">👤 المستخدمين النشطين</h3>
+            <div style="overflow-x: auto;">
+                <table id="userTable">
+                    <thead><tr><th>المستخدم</th><th>إنجاز</th><th>آخر ظهور</th></tr></thead>
+                    <tbody id="userTableBody"></tbody>
+                </table>
+            </div>
         </div>
 
         <div class="admin-section">
-            <h3 style="color: var(--green);">📥 إضافة تحديات بالجملة</h3>
-            <textarea id="bulkAr" placeholder="كل تحدي في سطر (بالعربية)"></textarea>
-            <textarea id="bulkEn" placeholder="Every challenge in a line (English)"></textarea>
-            <button onclick="addMultiple()" style="background:var(--green); width:100%; padding:12px; border:none; border-radius:8px; font-weight:bold; margin-top:10px; cursor:pointer;">رفع التحديات للسحابة ☁️</button>
+            <h3 style="color: var(--green);">📥 إضافة تحديات جديدة</h3>
+            <textarea id="bulkAr" placeholder="التحدي بالعربي..."></textarea>
+            <textarea id="bulkEn" placeholder="Challenge in English..."></textarea>
+            <button onclick="addMultiple()" style="background:var(--green); width:100%; padding:14px; border:none; border-radius:10px; font-weight:bold; margin-top:10px; cursor:pointer; color: #000;">إرسال إلى السحابة ☁️</button>
         </div>
     </div>
 
     <script>
-        // التوكن والرابط الجديد
         const BOT_TOKEN = "8066162864:AAEcmBdXICIK6Sa4mD_91TjECBvnUCOrI48";
         const FIREBASE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
 
         const tg = window.Telegram.WebApp;
+        tg.expand();
         const user = tg.initDataUnsafe.user || { id: 8421694319, first_name: "Admin" };
         const userId = user.id;
         const todayStr = new Date().toISOString().split('T')[0];
@@ -92,7 +148,7 @@
             snapTasks.forEach(t => { tasks.push(t.val()); });
             
             if (tasks.length === 0) {
-                document.getElementById('dailyTask').innerText = "أضف تحديات من لوحة الإدارة!";
+                document.getElementById('dailyTask').innerText = "لا توجد تحديات حالياً!";
                 return;
             }
 
@@ -102,9 +158,8 @@
             let available = tasks.filter(t => !doneAr.includes(t.ar));
             if(available.length === 0) available = tasks;
 
-            const dateSeed = new Date().getDate();
-            const salt = Math.abs(Math.sin(userId + dateSeed) * 1000);
-            const idx = Math.floor(salt % available.length);
+            const seed = new Date().getDate() + userId;
+            const idx = Math.floor(Math.abs(Math.sin(seed) * 2000) % available.length);
             
             const chosen = available[idx];
             document.getElementById('dailyTask').innerText = chosen.ar;
@@ -113,7 +168,7 @@
         }
 
         function handleDone() {
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ff9f43', '#ff6b6b', '#a18cd1'] });
             db.ref(`rq_users/${userId}/history/${todayStr}`).set({
                 done: true, 
                 taskAr: window.currentTaskAr,
@@ -123,18 +178,15 @@
 
         function showDoneUI() {
             document.getElementById('doneBtn').disabled = true;
-            document.getElementById('doneBtn').innerText = "أتممت المهمة ✅";
+            document.getElementById('doneBtn').innerText = "تم بنجاح ✨";
             document.getElementById('statusArea').style.display = 'block';
             
             setInterval(() => {
-                const now = new Date();
-                const tomorrow = new Date();
-                tomorrow.setHours(24,0,0,0);
-                const diff = tomorrow - now;
+                const diff = new Date().setHours(24,0,0,0) - new Date();
                 const h = Math.floor(diff/36e5).toString().padStart(2,'0');
                 const m = Math.floor((diff%36e5)/6e4).toString().padStart(2,'0');
                 const s = Math.floor((diff%6e4)/1000).toString().padStart(2,'0');
-                document.getElementById('nextQuestTimer').innerText = `تحدي جديد خلال: ${h}:${m}:${s}`;
+                document.getElementById('nextQuestTimer').innerText = `NEXT QUEST IN: ${h}:${m}:${s}`;
             }, 1000);
         }
 
@@ -144,9 +196,9 @@
                 const tbody = document.getElementById('userTableBody');
                 tbody.innerHTML = "";
                 for(let id in users) {
-                    const info = users[id].info || {name: "Guest", lastSeen: "-"};
+                    const info = users[id].info || {name: "Guest"};
                     const score = users[id].history ? Object.keys(users[id].history).length : 0;
-                    tbody.innerHTML += `<tr><td>${info.name}</td><td>${score} 🔥</td><td>${info.lastSeen.split(',')[0]}</td></tr>`;
+                    tbody.innerHTML += `<tr><td>${info.name}</td><td>${score} 🔥</td><td>${(info.lastSeen || "").split(',')[0]}</td></tr>`;
                 }
             });
         }
@@ -154,22 +206,16 @@
         function addMultiple() {
             const ar = document.getElementById('bulkAr').value.split('\n').filter(x => x.trim());
             const en = document.getElementById('bulkEn').value.split('\n').filter(x => x.trim());
-            
             if(ar.length !== en.length) { alert("عدد الأسطر غير متساوي!"); return; }
-
-            ar.forEach((t, i) => {
-                db.ref('rq_challenges').push({ ar: t, en: en[i] });
-            });
-            alert("تم حفظ التحديات بنجاح! 🎉");
-            document.getElementById('bulkAr').value = "";
-            document.getElementById('bulkEn').value = "";
+            ar.forEach((t, i) => db.ref('rq_challenges').push({ ar: t, en: en[i] }));
+            alert("تم الحفظ!");
+            document.getElementById('bulkAr').value = ""; document.getElementById('bulkEn').value = "";
         }
 
-        // إظهار زر الإدارة لكِ فقط
         if(userId == 8421694319) {
             const ab = document.createElement('button');
             ab.innerText="⚙️";
-            ab.style="position:fixed; top:10px; right:10px; background:none; border:none; color:white; font-size:24px; opacity:0.5; cursor:pointer; z-index:2001;";
+            ab.style="position:fixed; top:15px; right:15px; background:rgba(255,255,255,0.05); border-radius:50%; border:none; color:#555; width:40px; height:40px; cursor:pointer; z-index:2001; font-size:20px;";
             ab.onclick = () => {
                 document.getElementById('adminPanel').style.display = 'block';
                 loadAdminData();
@@ -177,12 +223,8 @@
             document.body.appendChild(ab);
         }
 
-        // تشغيل التطبيق
-        trackUser();
-        loadChallenge();
-        db.ref(`rq_users/${userId}/history/${todayStr}`).once('value', s => { 
-            if(s.exists()) showDoneUI(); 
-        });
+        trackUser(); loadChallenge();
+        db.ref(`rq_users/${userId}/history/${todayStr}`).once('value', s => { if(s.exists()) showDoneUI(); });
     </script>
 </body>
 </html>
