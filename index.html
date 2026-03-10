@@ -20,11 +20,9 @@
         .progress-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 8px; }
         .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #ff8c00); width: 0%; transition: 1.5s; }
         .btn-main { background: linear-gradient(135deg, var(--gold), #ff8c00); color: black; border: none; padding: 15px 60px; border-radius: 50px; font-size: 1.5rem; font-family: 'Caveat', cursive; font-weight: bold; margin-top: 30px; cursor: pointer; }
-        .btn-main:disabled { display: none; }
+        .btn-main:disabled { opacity: 0.5; cursor: not-allowed; }
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right; }
         .admin-sec { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
-        th, td { border: 1px solid #222; padding: 8px; text-align: center; }
         
         #gameSection { display: none; width: 85%; margin-top: 20px; animation: fadeIn 0.5s; }
         #activeGameContainer { background: rgba(255,255,255,0.05); border-radius: 20px; min-height: 200px; position: relative; overflow: hidden; border: 1px solid var(--glass); display: flex; align-items: center; justify-content: center; }
@@ -35,16 +33,16 @@
 <body id="mainBody">
 
     <div class="top-controls">
-        <button class="icon-btn" onclick="document.getElementById('bgInput').click()">🖼️</button>
-        <button class="icon-btn" onclick="openAdmin()">⚙️</button>
+        <button id="bgBtn" class="icon-btn" onclick="document.getElementById('bgInput').click()" style="display:none;">🖼️</button>
+        <button id="adminBtn" class="icon-btn" onclick="openAdmin()" style="display:none;">⚙️</button>
     </div>
     <input type="file" id="bgInput" hidden accept="image/*" onchange="uploadBG(this)">
 
     <div class="brand-name">Random Quest</div>
 
-    <div id="questUI">
+    <div id="questUI" style="display:none;">
         <div class="challenge-card">
-            <div id="dailyTask" style="font-size: 1.5rem; font-weight: 800; line-height: 1.3;">جاري التحقق...</div>
+            <div id="dailyTask" style="font-size: 1.5rem; font-weight: 800; line-height: 1.3;">جاري التحميل...</div>
             <div id="dailyTaskEn" style="font-size: 0.9rem; opacity: 0.4; margin-top: 10px; font-style: italic;">...</div>
         </div>
         <button id="doneBtn" class="btn-main" onclick="handleDone()">FIT / تم ✅</button>
@@ -82,14 +80,24 @@
     <script>
         const FIREBASE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
+        const MY_ID = 8421694319; // الأيدي الخاص بكِ للتحكم
         const userId = tg.initDataUnsafe.user?.id || 8421694319;
         const userName = tg.initDataUnsafe.user?.first_name || "لاعب مجهول";
+        
         let timerInterval, activeGame = "", currentScore = 0;
+        let isSaving = false;
 
         firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
 
+        // إظهار أزرار التحكم لكِ فقط
+        if(userId == MY_ID) {
+            document.getElementById('bgBtn').style.display = 'flex';
+            document.getElementById('adminBtn').style.display = 'flex';
+        }
+
         function uploadBG(input) {
+            if(userId != MY_ID) return;
             const file = input.files[0];
             const reader = new FileReader();
             reader.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; localStorage.setItem('userBG', e.target.result); };
@@ -99,17 +107,25 @@
 
         async function loadApp() {
             clearInterval(timerInterval);
+            const today = new Date().toISOString().split('T')[0]; // مفتاح اليوم YYYY-MM-DD
+            
             const snapTasks = await db.ref('rq_challenges').once('value');
             const snapUser = await db.ref(`rq_users/${userId}`).once('value');
-            const history = snapUser.val()?.history || {};
+            const userData = snapUser.val() || {};
+            const history = userData.history || {};
             
+            // تحديث شريط التقدم
             const completedCount = Object.keys(history).length;
             document.getElementById('progressFill').style.width = (Math.min(completedCount, 30) / 30 * 100) + "%";
             document.getElementById('progressText').innerText = `إنجازك: ${completedCount} / 30 🔥`;
 
-            const lastTask = Object.values(history).sort((a,b) => b.doneTime - a.doneTime)[0];
-            if (lastTask && Date.now() - lastTask.doneTime < 24 * 60 * 60 * 1000) { showDoneUI(lastTask.doneTime); return; }
+            // التحقق من تاريخ اليوم في الهيستوري لمنع التكرار
+            if (history[today]) {
+                showDoneUI(history[today].doneTime);
+                return;
+            }
 
+            // إذا لم ينجز تحدي اليوم
             let allTasks = []; snapTasks.forEach(t => allTasks.push({...t.val(), key: t.key}));
             const doneArs = Object.values(history).map(h => h.taskAr);
             let available = allTasks.filter(t => !doneArs.includes(t.ar));
@@ -119,17 +135,37 @@
             document.getElementById('dailyTask').innerText = chosen.ar;
             document.getElementById('dailyTaskEn').innerText = chosen.en;
             window.currentTaskAr = chosen.ar;
+            
             document.getElementById('questUI').style.display = 'block';
             document.getElementById('gameSection').style.display = 'none';
+            document.getElementById('statusArea').style.display = 'none';
         }
 
-        function handleDone() {
+        async function handleDone() {
+            if(isSaving) return;
+            isSaving = true;
             const now = Date.now();
+            const today = new Date().toISOString().split('T')[0];
+            
+            document.getElementById('doneBtn').disabled = true;
+            document.getElementById('doneBtn').innerText = "جاري الحفظ...";
+
             confetti({ particleCount: 150, spread: 70 });
-            db.ref(`rq_users/${userId}/history/task_${now}`).set({ done: true, taskAr: window.currentTaskAr, doneTime: now }).then(() => {
-                db.ref(`rq_users/${userId}/info`).update({ name: userName, lastSeen: now });
-                showDoneUI(now);
+
+            // الحفظ باستخدام تاريخ اليوم كمفتاح لضمان عدم التكرار نهائياً
+            await db.ref(`rq_users/${userId}/history/${today}`).set({
+                done: true,
+                taskAr: window.currentTaskAr,
+                doneTime: now
             });
+
+            await db.ref(`rq_users/${userId}/info`).update({
+                name: userName,
+                lastSeen: now
+            });
+
+            isSaving = false;
+            showDoneUI(now);
         }
 
         function showDoneUI(doneTime) {
@@ -149,7 +185,6 @@
             document.getElementById('nextQuestTimer').innerText = `التحدي القادم خلال: ${h}:${m}:${s}`;
         }
 
-        // --- نظام السكور الموحد ---
         async function syncScore(game, score) {
             activeGame = game;
             const ref = db.ref(`rq_leaderboards/${game}`);
@@ -158,7 +193,6 @@
             if (score > (snap.val()?.score || 0)) {
                 await userRef.set({ name: userName, score: score });
             }
-            // تحديث الواجهة
             ref.orderByChild('score').limitToLast(1).on('value', s => {
                 s.forEach(child => {
                     document.getElementById('globalLeader').innerText = `المتصدر في ${game}: ${child.val().name} (${child.val().score})`;
@@ -167,6 +201,7 @@
             userRef.on('value', s => { document.getElementById('personalBest').innerText = `أعلى سكور لكِ في ${game}: ${s.val()?.score || 0}`; });
         }
 
+        // --- ألعاب الانتظار ---
         function initMemoryGame() {
             currentScore = 0; syncScore("الذاكرة", 0);
             const container = document.getElementById('activeGameContainer');
@@ -175,7 +210,7 @@
             let flipped = [];
             icons.forEach(icon => {
                 const card = document.createElement('div');
-                card.style = "width:40px; height:40px; background:var(--glass); display:flex; align-items:center; justify-content:center; font-size:1.2rem; border-radius:8px;";
+                card.style = "width:40px; height:40px; background:var(--glass); display:flex; align-items:center; justify-content:center; font-size:1.2rem; border-radius:8px; cursor:pointer;";
                 card.onclick = function() {
                     if (flipped.length < 2 && !this.innerText) {
                         this.innerText = icon; flipped.push(this);
@@ -196,11 +231,10 @@
             let board = ["","","","","","","","",""];
             for(let i=0; i<9; i++) {
                 const cell = document.createElement('div');
-                cell.style = "width:50px; height:50px; background:var(--glass); display:flex; align-items:center; justify-content:center; font-size:1.2rem; border-radius:8px;";
+                cell.style = "width:50px; height:50px; background:var(--glass); display:flex; align-items:center; justify-content:center; font-size:1.2rem; border-radius:8px; cursor:pointer;";
                 cell.onclick = function() {
                     if(!board[i]) {
                         board[i] = "X"; this.innerText = "❌";
-                        // فحص بسيط للفوز (مثال للفوز فقط لزيادة السكور)
                         let empty = board.map((v, idx) => v === "" ? idx : null).filter(v => v !== null);
                         if(empty.length > 0) {
                             let m = empty[Math.floor(Math.random()*empty.length)];
@@ -219,14 +253,14 @@
                 if(activeGame !== "الفقاعات" || document.getElementById('gameSection').style.display === 'none') return clearInterval(interval);
                 const b = document.createElement('div');
                 const size = Math.random()*25+15;
-                b.style = `position:absolute; width:${size}px; height:${size}px; background:var(--pink); border-radius:50%; left:${Math.random()*85}%; top:${Math.random()*85}%; opacity:0.6; cursor:pointer;`;
+                b.style = `position:absolute; width:${size}px; height:${size}px; background:var(--pink); border-radius:50%; left:${Math.random()*85}%; top:${Math.random()*85}%; opacity:0.6; cursor:pointer; transition:0.3s;`;
                 b.onclick = function() { currentScore++; syncScore("الفقاعات", currentScore); this.remove(); };
                 container.appendChild(b);
-                setTimeout(() => b.remove(), 2000);
+                setTimeout(() => { if(b.parentNode) b.remove(); }, 2000);
             }, 700);
         }
 
-        function openAdmin() { if(userId == 8421694319) document.getElementById('adminPanel').style.display = 'block'; }
+        function openAdmin() { if(userId == MY_ID) document.getElementById('adminPanel').style.display = 'block'; }
         function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
         
         loadApp();
