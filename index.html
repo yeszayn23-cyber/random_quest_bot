@@ -21,7 +21,6 @@
             --border-glow: 0 0 15px rgba(57, 255, 20, 0.3);
         }
 
-        /* الأساسيات */
         body {
             font-family: 'Montserrat', 'Tajawal', sans-serif;
             margin: 0;
@@ -37,7 +36,6 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        /* الهيدر والتحكم */
         .header {
             width: 100%;
             padding: 20px 0;
@@ -88,9 +86,6 @@
             box-shadow: var(--border-glow);
         }
 
-        .icon-btn:active { transform: scale(0.8); }
-
-        /* منطقة الألعاب - Game Container */
         #gameSection {
             display: none;
             width: 94%;
@@ -117,7 +112,6 @@
             box-shadow: inset 0 0 30px rgba(57, 255, 20, 0.2), 0 0 20px rgba(0,0,0,0.5);
         }
 
-        /* Pepe Game Assets */
         #pepe {
             width: 45px;
             height: 45px;
@@ -127,7 +121,6 @@
             font-size: 2.5rem;
             z-index: 100;
             transition: bottom 0.2s cubic-bezier(0.1, 0.5, 0.1, 1);
-            filter: drop-shadow(0 0 8px var(--neon-green));
         }
 
         .obs {
@@ -137,7 +130,6 @@
             width: 30px;
             height: 30px;
             font-size: 1.6rem;
-            z-index: 90;
         }
 
         .score-box {
@@ -148,9 +140,9 @@
             font-size: 1.4rem;
             color: var(--neon-green);
             text-shadow: 0 0 5px var(--neon-green);
+            z-index: 1000;
         }
 
-        /* Memory Grid */
         .memory-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -168,16 +160,13 @@
             justify-content: center;
             font-size: 1.6rem;
             cursor: pointer;
-            transition: 0.3s;
         }
 
         .mem-card.flipped {
             background: #1a1a2e;
             border-color: var(--neon-green);
-            transform: rotateY(180deg);
         }
 
-        /* UI التحديات */
         #questSection {
             display: none;
             width: 85%;
@@ -190,25 +179,9 @@
             border: 2px solid var(--neon-green);
             padding: 30px;
             border-radius: 35px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             position: relative;
         }
 
-        .quest-card::before {
-            content: "DAILY MISSION";
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--neon-green);
-            color: black;
-            padding: 2px 15px;
-            font-size: 0.7rem;
-            font-weight: bold;
-            border-radius: 10px;
-        }
-
-        /* شريط التقدم */
         .progress-wrapper {
             width: 85%;
             margin: 20px 0 40px;
@@ -220,18 +193,15 @@
             border-radius: 20px;
             border: 1px solid rgba(255,255,255,0.1);
             overflow: hidden;
-            position: relative;
         }
 
         .bar-fill {
             height: 100%;
             background: linear-gradient(90deg, var(--neon-green), var(--neon-blue));
             width: 0%;
-            transition: 1.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-            box-shadow: 0 0 15px var(--neon-green);
+            transition: 1.5s;
         }
 
-        /* لوحة الإدارة الضخمة */
         .admin-panel {
             display: none;
             position: fixed;
@@ -242,21 +212,11 @@
             overflow-y: scroll;
         }
 
-        .admin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #333;
-            padding-bottom: 15px;
-        }
-
         .admin-card {
             background: #0f0f1f;
             border-radius: 20px;
             padding: 20px;
             margin-bottom: 20px;
-            border: 1px solid #222;
         }
 
         input {
@@ -267,7 +227,6 @@
             color: white;
             border-radius: 12px;
             margin: 10px 0;
-            box-sizing: border-box;
         }
 
         .btn-action {
@@ -287,16 +246,6 @@
             align-items: center;
             padding: 12px;
             border-bottom: 1px solid #222;
-        }
-
-        .reset-badge {
-            background: #ff9f43;
-            color: black;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.8rem;
-            cursor: pointer;
-            font-weight: bold;
         }
     </style>
 </head>
@@ -324,10 +273,10 @@
         <div class="game-tabs">
             <button class="icon-btn" onclick="startMemory(); event.stopPropagation();">🧠</button>
             <button class="icon-btn" onclick="startPepe(); event.stopPropagation();">🐸</button>
-            <button class="icon-btn" onclick="startBubbles(); event.stopPropagation();">🫧</button>
+            <button class="icon-btn" onclick="startReflex(); event.stopPropagation();">🎯</button>
         </div>
         <div id="activeGameDisplay"></div>
-        <div id="leaderboardNotice" style="text-align: center; font-size: 0.7rem; color: var(--neon-blue); margin-top: 10px;"></div>
+        <div id="leaderboardNotice" style="width:100%; margin-top:10px;"></div>
     </div>
 
     <div class="progress-wrapper">
@@ -342,31 +291,21 @@
     </div>
 
     <div id="adminPanel" class="admin-panel">
-        <div class="admin-header">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
             <h1 style="color: var(--neon-green); margin:0;">إدارة زينب 👑</h1>
             <button onclick="closeAdmin()" style="background:none; border:none; color:red; font-size:2rem;">&times;</button>
         </div>
-
         <div class="admin-card">
-            <h3 style="margin-top:0;">➕ إضافة تحدي جديد</h3>
-            <input type="text" id="newAr" placeholder="التحدي بالعربية (مثلاً: 20 ضغط)">
+            <h3>➕ إضافة تحدي جديد</h3>
+            <input type="text" id="newAr" placeholder="التحدي بالعربية">
             <input type="text" id="newEn" placeholder="Challenge in English">
-            <button class="btn-action" onclick="saveTask()">إضافة للقاعدة</button>
+            <button class="btn-action" onclick="saveTask()">إضافة</button>
         </div>
-
-        <div class="admin-card">
-            <h3 style="margin-top:0;">👥 إدارة المستخدمين (تصفير)</h3>
-            <div id="userManagerList"></div>
-        </div>
-
-        <div class="admin-card">
-            <h3 style="margin-top:0;">📜 التحديات المتوفرة</h3>
-            <div id="tasksManagerList"></div>
-        </div>
+        <div id="userManagerList"></div>
+        <div id="tasksManagerList"></div>
     </div>
 
     <script>
-        // --- الإعدادات الفنية ---
         const DB_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
         const myID = 8421694319;
@@ -376,13 +315,11 @@
         const db = firebase.database();
         let gameActive = "", gameLoops = [];
 
-        // إظهار أزرار الإدارة لزينب فقط
         if(user.id == myID) {
             document.getElementById('bgBtn').style.display = 'flex';
             document.getElementById('adminBtn').style.display = 'flex';
         }
 
-        // تنظيف الألعاب
         function stopAll() {
             gameActive = "";
             gameLoops.forEach(clearInterval);
@@ -390,43 +327,117 @@
             document.getElementById('activeGameDisplay').innerHTML = "";
         }
 
-        // --- 1. لعبة بيبي السريعة ---
+        // --- 1. التحديات العشوائية الفريدة ---
+        async function initApp() {
+            const today = new Date().toISOString().split('T')[0];
+            const userSnap = await db.ref(`rq_users/${user.id}`).once('value');
+            const data = userSnap.val() || {};
+            const history = data.history || {};
+            const count = Object.keys(history).length;
+
+            document.getElementById('progressBar').style.width = (Math.min(count, 30) / 30 * 100) + "%";
+            document.getElementById('progressText').innerText = `المستوى: ${count} / 30`;
+
+            if(history[today]) {
+                document.getElementById('gameSection').style.display = 'block';
+                document.getElementById('questSection').style.display = 'none';
+                renderLeaderboard();
+                startCountdown(history[today].time);
+            } else {
+                const tSnap = await db.ref('rq_challenges').once('value');
+                let allTasks = [];
+                tSnap.forEach(t => allTasks.push({id: t.key, ...t.val()}));
+                
+                // فلترة التحديات التي لم يقم بها المستخدم من قبل
+                const completedIds = Object.values(history).map(h => h.taskId);
+                const availableTasks = allTasks.filter(t => !completedIds.includes(t.id));
+                const finalTask = (availableTasks.length > 0) ? 
+                    availableTasks[Math.floor(Math.random() * availableTasks.length)] : 
+                    allTasks[Math.floor(Math.random() * allTasks.length)];
+
+                document.getElementById('taskAr').innerText = finalTask.ar;
+                document.getElementById('taskEn').innerText = finalTask.en;
+                document.getElementById('taskAr').dataset.currentId = finalTask.id;
+                document.getElementById('questSection').style.display = 'block';
+            }
+        }
+
+        // --- 2. لعبة Reflex Master المتطورة ---
+        function startReflex() {
+            stopAll(); gameActive = "reflex";
+            const stage = document.getElementById('activeGameDisplay');
+            stage.innerHTML = `<div class="score-box" id="rs">SCORE: 0</div>`;
+            let score = 0, speed = 1000;
+
+            function spawn() {
+                if(gameActive !== "reflex") return;
+                const target = document.createElement('div');
+                const size = Math.max(35, 60 - (score * 0.8));
+                target.style = `position:absolute; width:${size}px; height:${size}px; background:var(--neon-blue); border-radius:50%; 
+                                left:${Math.random()*80}%; top:${Math.random()*80}%; cursor:pointer; box-shadow:0 0 15px var(--neon-blue);`;
+                
+                target.onclick = (e) => {
+                    e.stopPropagation();
+                    score++;
+                    document.getElementById('rs').innerText = "SCORE: " + score;
+                    speed *= 0.96;
+                    target.remove();
+                    spawn();
+                };
+                stage.appendChild(target);
+                
+                const timeout = setTimeout(() => {
+                    if(target.parentElement) {
+                        alert("انتهى الوقت! سكورك: " + score);
+                        saveHighScore(score);
+                        stopAll();
+                    }
+                }, speed * 1.5);
+                gameLoops.push(timeout);
+            }
+            spawn();
+        }
+
+        // --- 3. لوحة الصدارة الحقيقية ---
+        async function renderLeaderboard() {
+            const snap = await db.ref('rq_scores').orderByChild('score').limitToLast(5).once('value');
+            let html = `<div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:15px;">
+                        <h4 style="margin:0 0 10px 0; color:var(--pink); text-align:center;">🏆 أساطير اللعبة</h4>`;
+            let ranks = [];
+            snap.forEach(d => ranks.unshift(d.val()));
+            ranks.forEach((r, i) => {
+                html += `<div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-bottom:5px;">
+                            <span>${i+1}. ${r.name}</span>
+                            <span style="color:var(--neon-green)">${r.score} PT</span>
+                         </div>`;
+            });
+            document.getElementById('leaderboardNotice').innerHTML = html + `</div>`;
+        }
+
+        // --- بقية الدوال الأساسية ---
         function startPepe() {
             stopAll(); gameActive = "pepe";
             const stage = document.getElementById('activeGameDisplay');
             stage.innerHTML = `<div class="score-box" id="ps">0</div><div id="pepe">🐸</div>`;
             let score = 0;
-
             function spawn() {
                 if(gameActive !== "pepe") return;
                 const o = document.createElement('div');
                 o.className = 'obs'; o.innerHTML = "🌵";
                 stage.appendChild(o);
-                
                 let x = -60;
                 let m = setInterval(() => {
-                    x += 7; // السرعة المطلوبة
-                    o.style.right = x + "px";
-                    
+                    x += 7; o.style.right = x + "px";
                     let pTop = document.getElementById('pepe').offsetTop;
-                    // Hitbox دقيق جداً
                     if(x > (stage.offsetWidth - 85) && x < (stage.offsetWidth - 45) && pTop > 200) {
-                        clearInterval(m); 
-                        alert("خسرت يا بطل! سكورك: " + score);
-                        saveHighScore(score);
-                        startPepe();
+                        clearInterval(m); alert("خسرت! سكورك: " + score); saveHighScore(score); startPepe();
                     }
-                    
-                    if(x > stage.offsetWidth) {
-                        clearInterval(m); o.remove();
-                        score++; document.getElementById('ps').innerText = score;
-                    }
+                    if(x > stage.offsetWidth) { clearInterval(m); o.remove(); score++; document.getElementById('ps').innerText = score; }
                 }, 20);
                 gameLoops.push(m);
                 setTimeout(spawn, Math.random() * 1200 + 900);
             }
             spawn();
-            getTopScore();
         }
 
         function handleGlobalJump() {
@@ -444,16 +455,9 @@
             if(s > (current.val()?.score || 0)) {
                 await ref.set({ name: user.first_name, score: s });
             }
+            renderLeaderboard();
         }
 
-        async function getTopScore() {
-            const snap = await db.ref('rq_scores').orderByChild('score').limitToLast(1).once('value');
-            snap.forEach(d => {
-                document.getElementById('leaderboardNotice').innerText = `المتصدر الحالي: ${d.val().name} (${d.val().score} نقطة)`;
-            });
-        }
-
-        // --- 2. لعبة الذاكرة (16 بطاقة) ---
         function startMemory() {
             stopAll();
             const stage = document.getElementById('activeGameDisplay');
@@ -461,24 +465,16 @@
             const icons = ['⚖️','📚','💻','💎','🔥','🚀','🌙','👾'];
             const deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
             let flipped = [];
-
             deck.forEach(icon => {
                 const c = document.createElement('div');
                 c.className = 'mem-card';
                 c.onclick = (e) => {
                     e.stopPropagation();
                     if(flipped.length < 2 && !c.innerText) {
-                        c.innerText = icon; c.classList.add('flipped');
-                        flipped.push(c);
+                        c.innerText = icon; c.classList.add('flipped'); flipped.push(c);
                         if(flipped.length === 2) {
-                            if(flipped[0].innerText === flipped[1].innerText) {
-                                flipped = [];
-                            } else {
-                                setTimeout(() => {
-                                    flipped.forEach(f => { f.innerText = ""; f.classList.remove('flipped'); });
-                                    flipped = [];
-                                }, 600);
-                            }
+                            if(flipped[0].innerText === flipped[1].innerText) flipped = [];
+                            else setTimeout(() => { flipped.forEach(f => { f.innerText = ""; f.classList.remove('flipped'); }); flipped = []; }, 600);
                         }
                     }
                 };
@@ -487,121 +483,12 @@
             stage.appendChild(grid);
         }
 
-        // --- 3. لعبة الفقاعات ---
-        function startBubbles() {
-            stopAll();
-            const stage = document.getElementById('activeGameDisplay');
-            let loop = setInterval(() => {
-                const b = document.createElement('div');
-                b.innerHTML = "🫧";
-                b.style = `position:absolute; left:${Math.random()*85}%; top:${Math.random()*85}%; font-size:2.2rem; cursor:pointer; filter:drop-shadow(0 0 5px var(--neon-blue));`;
-                b.onclick = (e) => { e.stopPropagation(); b.remove(); };
-                stage.appendChild(b);
-                setTimeout(() => b.remove(), 1200);
-            }, 700);
-            gameLoops.push(loop);
-        }
-
-        // --- إدارة النظام (ADMIN) ---
-        async function openAdmin() {
-            document.getElementById('adminPanel').style.display = 'block';
-            
-            // جلب المستخدمين للتصفير
-            db.ref('rq_users').on('value', snap => {
-                const list = document.getElementById('userManagerList');
-                list.innerHTML = "";
-                snap.forEach(u => {
-                    const d = u.val();
-                    const histCount = d.history ? Object.keys(d.history).length : 0;
-                    list.innerHTML += `
-                        <div class="user-row">
-                            <span>${d.info?.name || 'مجهول'} (${histCount}/30)</span>
-                            <span class="reset-badge" onclick="resetUserLevel('${u.key}')">تصفير المستوى</span>
-                        </div>`;
-                });
-            });
-
-            // جلب التحديات للحذف
-            db.ref('rq_challenges').on('value', snap => {
-                const list = document.getElementById('tasksManagerList');
-                list.innerHTML = "";
-                snap.forEach(t => {
-                    list.innerHTML += `
-                        <div class="user-row">
-                            <span>${t.val().ar}</span>
-                            <button onclick="delTask('${t.key}')" style="background:none; border:none; color:red;">حذف</button>
-                        </div>`;
-                });
-            });
-        }
-
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
-
-        async function saveTask() {
-            const ar = document.getElementById('newAr').value;
-            const en = document.getElementById('newEn').value;
-            if(ar && en) {
-                await db.ref('rq_challenges').push({ ar, en });
-                document.getElementById('newAr').value = "";
-                document.getElementById('newEn').value = "";
-            }
-        }
-
-        async function delTask(id) { if(confirm("حذف هذا التحدي؟")) await db.ref(`rq_challenges/${id}`).remove(); }
-
-        async function resetUserLevel(id) {
-            if(confirm("هل أنتِ متأكدة من تصفير مستوى هذا المستخدم نهائياً؟")) {
-                await db.ref(`rq_users/${id}/history`).remove();
-                alert("تم التصفير بنجاح");
-            }
-        }
-
-        // --- الخلفية ---
-        function processBG(input) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                document.body.style.backgroundImage = `url(${e.target.result})`;
-                localStorage.setItem('custom_bg', e.target.result);
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
-        if(localStorage.getItem('custom_bg')) document.body.style.backgroundImage = `url(${localStorage.getItem('custom_bg')})`;
-
-        // --- تهيئة التطبيق ---
-        async function initApp() {
-            const today = new Date().toISOString().split('T')[0];
-            const snap = await db.ref(`rq_users/${user.id}`).once('value');
-            const data = snap.val() || {};
-            const history = data.history || {};
-            const count = Object.keys(history).length;
-
-            // تحديث شريط التقدم
-            document.getElementById('progressBar').style.width = (Math.min(count, 30) / 30 * 100) + "%";
-            document.getElementById('progressText').innerText = `المستوى: ${count} / 30`;
-
-            if(history[today]) {
-                // المستخدم أكمل التحدي
-                document.getElementById('gameSection').style.display = 'block';
-                document.getElementById('questSection').style.display = 'none';
-                startCountdown(history[today].time);
-            } else {
-                // جلب تحدي عشوائي
-                const tSnap = await db.ref('rq_challenges').once('value');
-                let tasks = [];
-                tSnap.forEach(t => tasks.push(t.val()));
-                let finalTask = tasks[Math.floor(Math.random() * tasks.length)] || { ar: "قم بتمارين ضغط!", en: "Do some pushups!" };
-                document.getElementById('taskAr').innerText = finalTask.ar;
-                document.getElementById('taskEn').innerText = finalTask.en;
-                document.getElementById('questSection').style.display = 'block';
-            }
-        }
-
         async function markAsDone() {
             const today = new Date().toISOString().split('T')[0];
+            const taskId = document.getElementById('taskAr').dataset.currentId;
             const now = Date.now();
-            await db.ref(`rq_users/${user.id}/history/${today}`).set({ done: true, time: now });
+            await db.ref(`rq_users/${user.id}/history/${today}`).set({ done: true, time: now, taskId: taskId });
             await db.ref(`rq_users/${user.id}/info`).update({ name: user.first_name, lastSeen: now });
-            
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
             setTimeout(() => location.reload(), 1500);
         }
@@ -616,6 +503,30 @@
                 document.getElementById('countdown').innerText = `التحدي القادم خلال: ${h}:${m}:${s}`;
             }, 1000);
         }
+
+        // Admin functions (Simplified)
+        async function openAdmin() {
+            document.getElementById('adminPanel').style.display = 'block';
+            db.ref('rq_challenges').on('value', snap => {
+                const list = document.getElementById('tasksManagerList');
+                list.innerHTML = "<h3>📜 التحديات</h3>";
+                snap.forEach(t => {
+                    list.innerHTML += `<div class="user-row"><span>${t.val().ar}</span><button onclick="delTask('${t.key}')" style="color:red; background:none; border:none;">حذف</button></div>`;
+                });
+            });
+        }
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+        async function saveTask() {
+            const ar = document.getElementById('newAr').value, en = document.getElementById('newEn').value;
+            if(ar && en) { await db.ref('rq_challenges').push({ ar, en }); location.reload(); }
+        }
+        async function delTask(id) { if(confirm("حذف؟")) await db.ref(`rq_challenges/${id}`).remove(); }
+        function processBG(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => { document.body.style.backgroundImage = `url(${e.target.result})`; localStorage.setItem('custom_bg', e.target.result); };
+            reader.readAsDataURL(input.files[0]);
+        }
+        if(localStorage.getItem('custom_bg')) document.body.style.backgroundImage = `url(${localStorage.getItem('custom_bg')})`;
 
         initApp();
     </script>
