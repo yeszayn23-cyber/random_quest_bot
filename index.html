@@ -11,53 +11,51 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@900&family=Amiri+Quran&family=Caveat:wght@700&display=swap');
 
-        :root { --gold: #ffcf4d; --pink: #ff75c3; --glass: rgba(255, 255, 255, 0.1); }
+        :root { --gold: #ffcf4d; --pink: #ff75c3; --glass: rgba(255, 255, 255, 0.05); }
 
         body {
             font-family: 'Montserrat', sans-serif; margin: 0; height: 100vh;
             display: flex; flex-direction: column; align-items: center;
-            background: #050518 no-repeat center center/cover; /* سيتغير بالرفع */
-            color: white; overflow-x: hidden; text-align: center; transition: 0.5s;
+            background: #050518 no-repeat center center/cover;
+            color: white; overflow: hidden; text-align: center; transition: 0.5s;
         }
 
         .brand-name {
-            margin-top: 30px; font-size: 3rem; font-weight: 900;
+            margin-top: 25px; font-size: 2.5rem; font-weight: 900;
             background: linear-gradient(45deg, var(--gold), var(--pink));
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
         }
 
-        /* أزرار التحكم العلوية */
-        .top-controls { position: absolute; top: 15px; width: 90%; display: flex; justify-content: space-between; }
-        .icon-btn { background: var(--glass); border: none; color: white; padding: 10px; border-radius: 50%; cursor: pointer; backdrop-filter: blur(5px); }
+        .top-controls { position: absolute; top: 15px; width: 90%; display: flex; justify-content: space-between; z-index: 100; }
+        .icon-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; padding: 10px; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; backdrop-filter: blur(5px); }
 
-        /* بطاقة التحدي الشفافة */
         .challenge-card {
-            background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255,255,255,0.1);
-            backdrop-filter: blur(12px); padding: 30px 20px; border-radius: 30px;
-            width: 85%; margin-top: 40px; min-height: 150px;
-            display: flex; flex-direction: column; justify-content: center;
+            background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(15px); padding: 20px; border-radius: 30px;
+            width: 85%; margin-top: 30px; min-height: 120px; display: flex; flex-direction: column; justify-content: center;
         }
 
-        /* شريط التقدم 30/1 */
-        .progress-container { width: 85%; margin-top: 20px; text-align: right; }
-        .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 5px; }
-        .progress-fill { height: 100%; background: var(--gold); width: 0%; transition: 1s; }
+        .progress-container { width: 85%; margin-top: 20px; text-align: center; }
+        .progress-bar { height: 10px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden; margin-top: 8px; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), #ff8c00); width: 0%; transition: 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
         .btn-main {
             background: linear-gradient(135deg, var(--gold), #ff8c00);
             color: black; border: none; padding: 15px 60px; border-radius: 50px;
-            font-size: 1.6rem; font-family: 'Caveat', cursive; font-weight: bold;
-            margin-top: 30px; cursor: pointer; box-shadow: 0 10px 25px rgba(255, 207, 77, 0.4);
+            font-size: 1.5rem; font-family: 'Caveat', cursive; font-weight: bold; margin-top: 30px; cursor: pointer;
         }
 
-        /* لوحات التحكم */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto;
+            background: rgba(0,0,0,0.98); z-index: 1000; padding: 20px; box-sizing: border-box; overflow-y: auto; text-align: right;
         }
 
-        #habitBox { display:none; background: var(--glass); padding: 15px; border-radius: 20px; margin-top: 20px; }
+        .admin-sec { background: rgba(255,255,255,0.03); padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        table { width: 100%; border-collapse: collapse; font-size: 0.8rem; margin-top: 10px; }
+        th, td { border: 1px solid #222; padding: 8px; text-align: center; }
+        th { color: var(--gold); }
+        .del-btn { background: #ff4757; color: white; border: none; padding: 4px 8px; border-radius: 5px; cursor: pointer; }
     </style>
 </head>
 <body id="mainBody">
@@ -71,40 +69,50 @@
     <div class="brand-name">Random Quest</div>
 
     <div class="challenge-card">
-        <div id="dailyTask" style="font-size: 1.7rem; font-weight: bold;">جاري جلب التحدي...</div>
-        <div id="dailyTaskEn" style="font-size: 1rem; opacity: 0.5; margin-top: 10px;">Loading...</div>
+        <div id="dailyTask" style="font-size: 1.5rem; font-weight: 800; line-height: 1.3;">...</div>
+        <div id="dailyTaskEn" style="font-size: 0.9rem; opacity: 0.4; margin-top: 10px; font-style: italic;">...</div>
     </div>
 
     <div class="progress-container">
-        <span id="progressText" style="font-size: 0.9rem;">التحديات المكتملة: 0 / 30</span>
+        <span id="progressText" style="font-size: 0.85rem; color: var(--gold);">إنجازك: 0 / 30 🔥</span>
         <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
     </div>
 
     <button id="doneBtn" class="btn-main" onclick="handleDone()">FIT / تم ✅</button>
 
-    <div id="statusArea" style="display:none; margin-top:20px;">
-        <div style="color:var(--gold); font-size:1.2rem;">بطل! نراك غداً 🌟</div>
-        <div id="nextQuestTimer" style="font-family:monospace; margin-top:5px;">00:00:00</div>
-    </div>
-
-    <div id="habitBox">
-        <h3 style="color:var(--gold)">صندوق العادات المفتوح 🔓</h3>
-        <div id="habitList"></div>
+    <div id="statusArea" style="display:none; margin-top: 20px;">
+        <div style="color:var(--gold); font-size:1.1rem; font-weight: bold;">أحسنتِ! نراك غداً 🌟</div>
+        <div id="nextQuestTimer" style="font-family: monospace; color: var(--pink); font-weight: bold;">00:00:00</div>
     </div>
 
     <div id="adminPanel" class="modal">
-        <button onclick="closeAdmin()" style="color:red; float:left;">إغلاق ×</button>
-        <h2 style="color:var(--gold)">لوحة التحكم 🛠</h2>
-        <button onclick="saveToCloud()" style="width:100%; padding:15px; background:var(--gold); border:none; border-radius:10px; font-weight:bold;">حفظ بيانات المستخدمين في السحابة ☁️</button>
-        <div id="userStats" style="margin-top:20px; text-align:right;"></div>
-        <hr>
-        <textarea id="bulkAr" placeholder="تحديات بالعربي (كل سطر واحد)" style="width:100%; height:100px;"></textarea>
-        <textarea id="bulkEn" placeholder="Challenges in English..." style="width:100%; height:100px; margin-top:10px;"></textarea>
-        <button onclick="addTasks()" style="width:100%; padding:15px; background:green; color:white; border:none; margin-top:10px;">إضافة التحديات</button>
+        <button onclick="closeAdmin()" style="color:#ff4757; background:none; border:none; font-size:1.5rem; float:left;">×</button>
+        <h2 style="color:var(--gold); text-align:center;">لوحة الإدارة 🛠</h2>
+
+        <div class="admin-sec">
+            <h3>👥 سجل الزوار (Guestbook)</h3>
+            <div id="userStatsList"></div>
+        </div>
+
+        <div class="admin-sec">
+            <h3>📝 إدارة التحديات</h3>
+            <div style="max-height: 200px; overflow-y: auto;">
+                <table id="challengeTable">
+                    <thead><tr><th>التحدي</th><th>حذف</th></tr></thead>
+                    <tbody id="challengeTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="admin-sec">
+            <h3>➕ إضافة تحديات</h3>
+            <textarea id="bulkAr" placeholder="بالعربي..." style="width:100%; height:50px; background:#111; color:white;"></textarea>
+            <textarea id="bulkEn" placeholder="English..." style="width:100%; height:50px; margin-top:5px; background:#111; color:white;"></textarea>
+            <button onclick="addTasks()" style="width:100%; padding:10px; background:#2ecc71; color:white; border:none; margin-top:10px; border-radius:8px;">إضافة</button>
+        </div>
     </div>
 
     <script>
-        const BOT_TOKEN = "8066162864:AAEcmBdXICIK6Sa4mD_91TjECBvnUCOrI48";
         const FIREBASE_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
         const userId = tg.initDataUnsafe.user?.id || 8421694319;
@@ -113,7 +121,6 @@
         firebase.initializeApp({ databaseURL: FIREBASE_URL });
         const db = firebase.database();
 
-        // نظام الخلفية
         function uploadBG(input) {
             const file = input.files[0];
             const reader = new FileReader();
@@ -131,25 +138,22 @@
             const userData = snapUser.val() || {};
             const history = userData.history || {};
             
-            // تحديث شريط التقدم
             const completedCount = Object.keys(history).length;
-            document.getElementById('progressFill').style.width = (completedCount / 30 * 100) + "%";
-            document.getElementById('progressText').innerText = `التحديات المكتملة: ${completedCount} / 30`;
+            document.getElementById('progressFill').style.width = (Math.min(completedCount, 30) / 30 * 100) + "%";
+            document.getElementById('progressText').innerText = `إنجازك: ${completedCount} / 30 🔥`;
 
-            if(completedCount >= 30) {
-                document.getElementById('habitBox').style.display = 'block';
-                renderHabits(history);
-            }
+            let allTasks = []; snapTasks.forEach(t => {
+                let data = t.val();
+                data.key = t.key;
+                allTasks.push(data);
+            });
 
-            // اختيار تحدي لم يظهر من قبل
-            let allTasks = []; snapTasks.forEach(t => allTasks.push(t.val()));
             const doneArs = Object.values(history).map(h => h.taskAr);
             let available = allTasks.filter(t => !doneArs.includes(t.ar));
-
             if(available.length === 0) available = allTasks;
 
             const seed = new Date().getDate() + userId;
-            const chosen = available[Math.floor(Math.abs(Math.sin(seed) * 1000) % available.length)];
+            const chosen = available[Math.floor(Math.abs(Math.sin(seed) * 2000) % available.length)];
             
             document.getElementById('dailyTask').innerText = chosen.ar;
             document.getElementById('dailyTaskEn').innerText = chosen.en;
@@ -161,12 +165,13 @@
         function handleDone() {
             confetti({ particleCount: 150, spread: 70 });
             db.ref(`rq_users/${userId}/history/${todayStr}`).set({ done: true, taskAr: window.currentTaskAr });
-            db.ref(`rq_users/${userId}/info`).update({ name: tg.initDataUnsafe.user?.first_name || "Admin", lastSeen: Date.now() });
+            db.ref(`rq_users/${userId}/info`).update({ name: tg.initDataUnsafe.user?.first_name || "Guest", lastSeen: Date.now() });
             showDoneUI();
         }
 
         function showDoneUI() {
             document.getElementById('doneBtn').disabled = true;
+            document.getElementById('doneBtn').innerText = "تم بنجاح ✨";
             document.getElementById('statusArea').style.display = 'block';
             setInterval(() => {
                 const diff = new Date().setHours(24,0,0,0) - new Date();
@@ -177,20 +182,52 @@
             }, 1000);
         }
 
-        function openAdmin() { if(userId == 8421694319) document.getElementById('adminPanel').style.display = 'block'; }
-        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
+        function openAdmin() {
+            if(userId == 8421694319) {
+                document.getElementById('adminPanel').style.display = 'block';
+                loadAdminSections();
+            }
+        }
 
-        function saveToCloud() {
-            alert("تمت مزامنة بيانات جميع المستخدمين مع السحابة بنجاح لضمان دقة المؤقت وعدم تكرار المهام.");
+        function loadAdminSections() {
+            // سجل الزوار
+            db.ref('rq_users').on('value', s => {
+                const users = s.val();
+                let html = "<table><tr><th>الاسم</th><th>السكور</th></tr>";
+                for(let id in users) {
+                    const score = users[id].history ? Object.keys(users[id].history).length : 0;
+                    html += `<tr><td>${users[id].info?.name || "مجهول"}</td><td>${score} 🔥</td></tr>`;
+                }
+                document.getElementById('userStatsList').innerHTML = html + "</table>";
+            });
+
+            // قائمة التحديات للحذف
+            db.ref('rq_challenges').on('value', s => {
+                const tasks = s.val();
+                let html = "";
+                for(let key in tasks) {
+                    html += `<tr><td>${tasks[key].ar}</td><td><button class="del-btn" onclick="deleteTask('${key}')">🗑️</button></td></tr>`;
+                }
+                document.getElementById('challengeTableBody').innerHTML = html;
+            });
+        }
+
+        function deleteTask(key) {
+            if(confirm("هل أنتِ متأكدة من حذف هذا التحدي؟")) {
+                db.ref(`rq_challenges/${key}`).remove();
+            }
         }
 
         function addTasks() {
-            const ar = document.getElementById('bulkAr').value.split('\n').filter(x => x.trim());
-            const en = document.getElementById('bulkEn').value.split('\n').filter(x => x.trim());
-            ar.forEach((t, i) => db.ref('rq_challenges').push({ ar: t, en: en[i] || "Quest" }));
-            alert("تمت الإضافة!");
+            const ar = document.getElementById('bulkAr').value;
+            const en = document.getElementById('bulkEn').value;
+            if(ar) {
+                db.ref('rq_challenges').push({ ar: ar, en: en || "Quest" });
+                document.getElementById('bulkAr').value = ""; document.getElementById('bulkEn').value = "";
+            }
         }
 
+        function closeAdmin() { document.getElementById('adminPanel').style.display = 'none'; }
         loadApp();
     </script>
 </body>
