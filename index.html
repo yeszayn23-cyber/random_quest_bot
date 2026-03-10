@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Sultana Quest Ultimate - 30 Levels 👑</title>
+    <title>Sultana Quest - Zainab Edition 👑</title>
     
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
@@ -16,20 +16,19 @@
         :root {
             --neon-green: #39ff14;
             --neon-blue: #00ffff;
-            --pink: #ff75c3;
-            --pepe-pink: #ff85c0;
-            --bg-dark: #050510;
+            --pink: #ff00ff;
+            --bg-dark: #020205;
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
         * { 
             box-sizing: border-box; 
             -webkit-tap-highlight-color: transparent; 
-            outline: none; 
             user-select: none;
         }
 
         body {
-            font-family: 'Montserrat', 'Tajawal', sans-serif;
+            font-family: 'Tajawal', sans-serif;
             margin: 0; padding: 0;
             width: 100vw; height: 100vh;
             background-color: var(--bg-dark);
@@ -37,389 +36,376 @@
             background-position: center;
             color: white; 
             overflow: hidden;
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: space-between;
+            display: flex; flex-direction: column; align-items: center;
         }
 
-        /* الهيدر والأزرار */
-        .top-nav {
-            position: absolute; top: 20px; width: 92%;
+        /* الهيدر العلوي */
+        .header-main {
+            width: 100%; text-align: center; padding: 40px 0 20px 0;
+            z-index: 10;
+        }
+        .brand-title {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.8rem; font-weight: 900;
+            background: linear-gradient(to right, var(--neon-green), var(--neon-blue), var(--pink));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 15px rgba(57, 255, 20, 0.5));
+        }
+
+        /* أزرار التحكم الجانبية */
+        .side-controls {
+            position: absolute; top: 15px; width: 92%;
             display: flex; justify-content: space-between; z-index: 1000;
         }
-
-        .nav-btn {
-            background: rgba(0, 0, 0, 0.6); 
-            border: 2px solid var(--neon-green);
-            color: white; border-radius: 50%; 
-            width: 50px; height: 50px;
+        .ctrl-btn {
+            background: var(--glass); border: 2px solid var(--neon-green);
+            color: white; border-radius: 50%; width: 55px; height: 55px;
             display: flex; align-items: center; justify-content: center;
-            font-size: 1.3rem; box-shadow: 0 0 15px var(--neon-green);
+            font-size: 1.4rem; backdrop-filter: blur(10px);
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.2);
         }
 
-        .header-main { margin-top: 25px; text-align: center; }
-        .logo-text {
-            font-size: 2.6rem; font-weight: 900;
-            background: linear-gradient(45deg, var(--neon-green), var(--neon-blue), var(--pink));
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 12px var(--neon-green));
+        /* منطقة اللعب الكبيرة */
+        #mainContainer {
+            width: 94%; flex: 1; display: flex; flex-direction: column;
+            justify-content: center; position: relative;
         }
 
-        /* شاشة اللعب الكبيرة */
-        #gameScreenArea {
-            display: none; width: 95%; height: 68vh;
-            background: rgba(0, 0, 0, 0.85);
+        #gameCanvas {
+            background: rgba(0, 0, 0, 0.9);
             border: 3px solid var(--neon-blue);
             border-radius: 40px;
+            width: 100%; height: 450px;
             position: relative; overflow: hidden;
-            box-shadow: inset 0 0 40px rgba(0, 255, 255, 0.2);
-            touch-action: none;
+            box-shadow: inset 0 0 50px rgba(0, 255, 255, 0.1), 0 0 30px rgba(0, 0, 0, 0.5);
         }
 
-        /* سلة بيبي الوردي */
-        #pepeBasket {
-            position: absolute; bottom: 25px; left: 50%;
-            width: 85px; height: 75px;
-            background: var(--pepe-pink);
-            border-radius: 20px 20px 50% 50%;
-            border: 4px solid #d44d8c;
-            transform: translateX(-50%);
-            z-index: 100;
-            display: flex; justify-content: center; align-items: center;
-            font-size: 2.2rem; filter: drop-shadow(0 0 20px var(--pink));
+        /* Pepe Character */
+        #pepePlayer {
+            width: 50px; height: 50px; position: absolute;
+            bottom: 25px; left: 50px; z-index: 100;
+            background: #4CAF50; border-radius: 50% 50% 40% 40%;
+            border: 3px solid #1B5E20; transition: bottom 0.22s cubic-bezier(0.1, 0.6, 0.1, 1);
         }
+        #pepePlayer::before, #pepePlayer::after {
+            content: ''; position: absolute; top: -6px; width: 14px; height: 14px;
+            background: white; border-radius: 50%; border: 1px solid black;
+        }
+        #pepePlayer::before { left: 7px; } #pepePlayer::after { right: 7px; }
 
-        /* واجهة معلومات اللعبة */
-        .game-info-bar {
-            position: absolute; top: 20px; left: 0; width: 100%;
-            display: flex; justify-content: space-around;
-            padding: 0 10px; z-index: 200; pointer-events: none;
+        /* Obstacles & Info */
+        .obs { position: absolute; bottom: 25px; right: -70px; font-size: 2.5rem; }
+        .hud-display {
+            position: absolute; top: 25px; left: 0; width: 100%;
+            display: flex; justify-content: space-around; z-index: 200;
         }
-        .info-pill {
+        .pill {
             background: rgba(0,0,0,0.8); border: 1.5px solid var(--neon-green);
-            padding: 6px 15px; border-radius: 15px; font-size: 0.85rem;
-            color: var(--neon-green); font-weight: bold;
+            padding: 8px 20px; border-radius: 20px; font-weight: 900;
+            color: var(--neon-green); font-size: 1rem;
         }
 
-        .falling-obj { position: absolute; font-size: 2.8rem; z-index: 50; }
-
-        /* لافتة الانتقال بين المستويات */
-        #levelNotify {
-            display: none; position: absolute; top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 3.5rem; font-weight: 900; color: #fff;
-            text-shadow: 0 0 30px var(--neon-green); z-index: 1000;
-            text-align: center; animation: levelAnim 0.8s ease-out;
+        .back-menu-btn {
+            position: absolute; bottom: 20px; right: 20px;
+            background: var(--neon-blue); color: black; border: none;
+            padding: 10px 20px; border-radius: 15px; font-weight: bold;
         }
 
-        @keyframes levelAnim {
-            0% { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
-            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 1; }
-            100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
-        }
-
-        /* واجهة المهمة اليومية */
-        #questStage { display: none; width: 90%; text-align: center; }
-        .quest-container {
-            background: rgba(0, 0, 0, 0.95); border: 3px solid var(--neon-green);
-            padding: 45px 25px; border-radius: 45px;
-            box-shadow: 0 0 40px rgba(57, 255, 20, 0.3);
+        /* واجهة التحدي اليومي */
+        #questStage { width: 90%; text-align: center; margin-bottom: 60px; }
+        .quest-box {
+            background: rgba(10, 10, 20, 0.9); border: 2px solid var(--neon-green);
+            padding: 40px 25px; border-radius: 45px;
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.2);
         }
         .btn-action {
-            background: var(--neon-green); color: black; padding: 18px;
-            border-radius: 20px; width: 100%; border: none;
-            font-weight: 900; font-size: 1.3rem; margin-top: 30px;
-            box-shadow: 0 10px 0 #2dbd0f; transition: 0.1s;
+            background: var(--neon-green); color: black; border: none;
+            padding: 18px; width: 100%; border-radius: 20px;
+            font-weight: 900; font-size: 1.3rem; margin-top: 25px;
+            box-shadow: 0 8px 0 #28b80e; transition: 0.1s;
         }
-        .btn-action:active { transform: translateY(5px); box-shadow: 0 5px 0 #2dbd0f; }
+        .btn-action:active { transform: translateY(4px); box-shadow: 0 4px 0 #28b80e; }
 
-        /* الترتيب العالمي */
-        #scoreBoard { margin-top: 15px; font-size: 0.85rem; color: var(--neon-blue); text-align: center; }
+        /* التقدم العام */
+        .progress-footer { width: 90%; padding-bottom: 40px; }
+        .prog-label { font-size: 0.9rem; margin-bottom: 10px; color: #888; display: flex; justify-content: space-between; }
+        .prog-track { height: 16px; background: #111; border-radius: 20px; overflow: hidden; border: 1px solid #333; }
+        .prog-bar { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); width: 0%; transition: 1.5s; }
 
-        /* الفوتر والتقدم */
-        .footer-nav { width: 90%; padding-bottom: 35px; }
-        .lvl-label { font-size: 0.8rem; margin-bottom: 8px; color: #aaa; text-align: right; }
-        .bar-container { height: 14px; background: #111; border-radius: 25px; overflow: hidden; border: 1px solid #333; }
-        .bar-fill { height: 100%; background: linear-gradient(90deg, var(--neon-green), var(--neon-blue)); width: 0%; transition: 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
-
-        /* لوحة الإدارة لزينب */
-        .admin-overlay {
+        /* لوحة التحكم */
+        .admin-modal {
             display: none; position: fixed; inset: 0; background: #000;
-            z-index: 5000; padding: 30px; overflow-y: auto;
+            z-index: 5000; padding: 30px; overflow-y: auto; text-align: right;
         }
-        .admin-section { background: #0a0a1a; padding: 25px; border-radius: 25px; margin-bottom: 25px; border: 1px solid #1f1f3a; }
-        .admin-input { width: 100%; padding: 15px; background: #111; border: 2px solid #333; color: #fff; border-radius: 12px; margin: 10px 0; font-family: inherit; }
+        .input-style {
+            width: 100%; padding: 15px; background: #111; border: 2px solid #333;
+            color: #fff; border-radius: 15px; margin: 15px 0; font-family: inherit;
+        }
     </style>
 </head>
-<body>
+<body onclick="gameJump()">
 
-    <div class="top-nav">
-        <button id="btnSettings" class="nav-btn" onclick="document.getElementById('bgUpload').click();" style="display:none;">🖼️</button>
-        <button id="btnAdmin" class="nav-btn" onclick="toggleAdminPanel(true);" style="display:none;">⚙️</button>
+    <div class="side-controls">
+        <button id="bgTrigger" class="ctrl-btn" onclick="document.getElementById('bgFile').click(); event.stopPropagation();" style="display:none;">🖼️</button>
+        <button id="adminTrigger" class="ctrl-btn" onclick="toggleAdmin(true); event.stopPropagation();" style="display:none;">⚙️</button>
     </div>
-    <input type="file" id="bgUpload" hidden onchange="processBackground(this)">
+    <input type="file" id="bgFile" hidden onchange="updateBackground(this)">
 
-    <div class="header-main"><div class="logo-text">Random Quest</div></div>
+    <div class="header-main">
+        <div class="brand-title">Random Quest</div>
+    </div>
 
-    <div id="questStage">
-        <div class="quest-container">
-            <div style="color:var(--neon-green); font-size: 0.9rem; margin-bottom:15px; letter-spacing: 2px;">DAILY CHALLENGE</div>
-            <h2 id="arabicTaskDisplay" style="margin:0; font-size: 2rem; line-height: 1.4;">...</h2>
-            <button class="btn-action" onclick="markQuestDone()">تـم التـنـفـيـذ ✅</button>
+    <div id="questStage" style="display:none;">
+        <div class="quest-box">
+            <div style="color:var(--neon-green); font-size:0.9rem; letter-spacing:3px; margin-bottom:15px;">DAILY MISSION</div>
+            <h2 id="arabicTask" style="margin:0; font-size:2.2rem; line-height:1.4;">...</h2>
+            <button class="btn-action" onclick="completeQuest()">تم الإنجاز ✅</button>
         </div>
     </div>
 
-    <div id="gameScreenArea">
-        <div class="game-info-bar">
-            <div class="info-pill" id="uiScore">النقاط: 0</div>
-            <div class="info-pill" id="uiTarget" style="border-color: var(--pink);">الهدف: 🌸</div>
-            <div class="info-pill" id="uiLevel">مستوى: 1</div>
+    <div id="mainContainer" style="display:none;">
+        <div id="gameCanvas">
+            <div id="gameStartUI" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:20px;">
+                <button class="btn-action" style="width:70%;" onclick="startPepe(); event.stopPropagation();">العب Pepe Jump 🐸</button>
+                <button class="btn-action" style="width:70%; background:var(--neon-blue); box-shadow:0 8px 0 #009999;" onclick="startMemory(); event.stopPropagation();">تحدي الذاكرة 🧠</button>
+            </div>
         </div>
-        <div id="levelNotify">LEVEL UP!</div>
-        <div id="pepeBasket">🐸</div>
+        <div id="highscoreDisplay" style="text-align:center; font-size:0.9rem; color:var(--neon-blue); margin-top:15px; font-weight:bold;"></div>
     </div>
 
-    <div id="scoreBoard">جاري جلب قائمة الأساطير...</div>
-
-    <div class="footer-nav">
-        <div id="globalLvlStatus" class="lvl-label">تقدمك العام: 0 / 30 يوم</div>
-        <div class="bar-container"><div id="mainProgress" class="bar-fill"></div></div>
+    <div class="progress-footer">
+        <div class="prog-label">
+            <span id="progText">الرحلة: 0 / 30 يوم</span>
+            <span>🔥</span>
+        </div>
+        <div class="prog-track"><div id="progFill" class="prog-bar"></div></div>
     </div>
 
-    <div id="adminOverlay" class="admin-overlay">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:30px;">
-            <h2 style="color:var(--neon-green); margin:0;">لوحة تحكم زينب 👑</h2>
-            <button onclick="toggleAdminPanel(false)" style="background:none; border:none; color:white; font-size:3.5rem;">&times;</button>
+    <div id="adminPanel" class="admin-modal">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h2 style="color:var(--neon-green);">لوحة تحكم زينب 👑</h2>
+            <button onclick="toggleAdmin(false)" style="color:white; background:none; border:none; font-size:3rem;">&times;</button>
         </div>
-        <div class="admin-section">
-            <h3 style="margin-top:0;">✨ إضافة تحدي جديد</h3>
-            <input type="text" id="inputAr" class="admin-input" placeholder="اكتبي التحدي هنا...">
-            <button class="btn-action" onclick="submitNewTask()" style="margin-top:10px; padding:12px;">إضافة للمجموعة</button>
+        <div style="background:var(--glass); padding:20px; border-radius:25px; border:1px solid #222; margin-top:20px;">
+            <h3>➕ إضافة تحدي جديد</h3>
+            <input type="text" id="taskInput" class="input-style" placeholder="اكتبي المهمة هنا...">
+            <button class="btn-action" onclick="pushTask()">حفظ في قاعدة البيانات</button>
         </div>
-        <div id="usersDataContainer"></div>
+        <div id="adminUsersList" style="margin-top:30px;"></div>
     </div>
 
     <script>
-        // الإعدادات الأساسية
-        const DB_URL = "https://randomquest-app-default-rtdb.firebaseio.com/";
+        // إعدادات Firebase
+        const DB_CONFIG = "https://randomquest-app-default-rtdb.firebaseio.com/";
         const tg = window.Telegram.WebApp;
         const ZAINAB_ID = 8421694319;
-        const user = tg.initDataUnsafe.user || { id: ZAINAB_ID, first_name: "زينب" };
+        const currentUser = tg.initDataUnsafe.user || { id: ZAINAB_ID, first_name: "زينب" };
 
-        firebase.initializeApp({ databaseURL: DB_URL });
+        firebase.initializeApp({ databaseURL: DB_CONFIG });
         const database = firebase.database();
 
-        // متغيرات اللعبة
-        let currentScore = 0;
-        let currentLvl = 1;
-        let isGameActive = false;
-        let activeTarget = "🌸";
-        const gameItems = ["🌸", "💎", "⭐", "🍀", "🍎", "💣"];
-        let gameLoops = [];
+        let activeGame = "", gameIntervals = [], currentScore = 0, currentLevel = 1;
 
-        // إظهار أزرار الإدارة
-        if (user.id == ZAINAB_ID) {
-            document.getElementById('btnSettings').style.display = 'flex';
-            document.getElementById('btnAdmin').style.display = 'flex';
+        // التحقق من هوية زينب
+        if (currentUser.id == ZAINAB_ID) {
+            document.getElementById('bgTrigger').style.display = 'flex';
+            document.getElementById('adminTrigger').style.display = 'flex';
         }
 
-        /* -----------------------------------------------------------
-           المحرك الرئيسي للعبة (Game Engine)
-        ----------------------------------------------------------- */
-        function launchGame() {
-            isGameActive = true;
-            const container = document.getElementById('gameScreenArea');
-            const basket = document.getElementById('pepeBasket');
-
-            // التحكم بالسحب
-            container.addEventListener('touchmove', (e) => {
-                if(!isGameActive) return;
-                const rect = container.getBoundingClientRect();
-                let x = e.touches[0].clientX - rect.left - (basket.offsetWidth / 2);
-                if (x > 0 && x < rect.width - basket.offsetWidth) {
-                    basket.style.left = x + "px";
-                }
-            });
-
-            generateItem();
-            updateLeaderboard();
+        /* ----------------------- محرك الألعاب ----------------------- */
+        function resetCanvas() {
+            activeGame = "";
+            gameIntervals.forEach(clearInterval);
+            gameIntervals = [];
+            document.getElementById('gameCanvas').innerHTML = `
+                <div id="gameStartUI" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; gap:20px;">
+                    <button class="btn-action" style="width:70%;" onclick="startPepe(); event.stopPropagation();">العب Pepe Jump 🐸</button>
+                    <button class="btn-action" style="width:70%; background:var(--neon-blue); box-shadow:0 8px 0 #009999;" onclick="startMemory(); event.stopPropagation();">تحدي الذاكرة 🧠</button>
+                </div>`;
         }
 
-        function generateItem() {
-            if (!isGameActive) return;
+        function startPepe() {
+            activeGame = "pepe";
+            currentScore = 0; currentLevel = 1;
+            const cvs = document.getElementById('gameCanvas');
+            cvs.innerHTML = `
+                <div class="hud-display">
+                    <div class="pill" id="scoreHUD">Score: 0</div>
+                    <div class="pill" id="lvlHUD" style="border-color:var(--neon-blue); color:var(--neon-blue);">Lvl: 1</div>
+                </div>
+                <div id="pepePlayer"></div>
+                <button class="back-menu-btn" onclick="event.stopPropagation(); resetCanvas();">الخروج 🏠</button>
+            `;
 
-            const container = document.getElementById('gameScreenArea');
-            const item = document.createElement('div');
-            item.className = 'falling-obj';
-            
-            // اختيار عشوائي للأشكال
-            const type = gameItems[Math.floor(Math.random() * gameItems.length)];
-            item.innerHTML = type;
-            item.style.left = Math.random() * 88 + "%";
-            item.style.top = "-70px";
-            container.appendChild(item);
+            function createObs() {
+                if (activeGame !== "pepe") return;
+                const o = document.createElement('div');
+                o.className = "obs";
+                o.innerHTML = ["🌵", "🔥", "🧱", "💣"][Math.floor(Math.random() * 4)];
+                cvs.appendChild(o);
 
-            let posY = -70;
-            // معادلة السرعة بناءً على المستوى (تزداد في كل مستوى)
-            let fallSpeed = 3.5 + (currentLvl * 0.45); 
+                let x = -70;
+                let speed = 6.5 + (currentLevel * 0.6); // زيادة السرعة مع المستوى
 
-            let moveInterval = setInterval(() => {
-                posY += fallSpeed;
-                item.style.top = posY + "px";
+                let move = setInterval(() => {
+                    x += speed;
+                    o.style.right = x + "px";
 
-                const bRect = document.getElementById('pepeBasket').getBoundingClientRect();
-                const iRect = item.getBoundingClientRect();
+                    let p = document.getElementById('pepePlayer');
+                    if(!p) return;
+                    
+                    // منطق الاصطدام المطور
+                    let pRect = p.getBoundingClientRect();
+                    let oRect = o.getBoundingClientRect();
 
-                // كشف الاصطدام
-                if (iRect.bottom > bRect.top && iRect.left < bRect.right && iRect.right > bRect.left) {
-                    if (type === activeTarget) {
-                        currentScore += 10;
-                        handleScoreLogic();
-                    } else if (type === "💣") {
-                        triggerGameOver();
-                    } else {
-                        currentScore = Math.max(0, currentScore - 5);
+                    if (oRect.left < pRect.right && oRect.right > pRect.left && oRect.top < pRect.bottom) {
+                        clearInterval(move);
+                        alert(`خسرتي! المستوى: ${currentLevel}\nالسكور: ${currentScore}`);
+                        saveHighscore(currentScore, currentLevel);
+                        resetCanvas();
                     }
-                    document.getElementById('uiScore').innerText = `النقاط: ${currentScore}`;
-                    clearInterval(moveInterval);
-                    item.remove();
-                }
 
-                if (posY > 700) {
-                    clearInterval(moveInterval);
-                    item.remove();
-                }
-            }, 16);
-
-            // تكرار الإنشاء يسرع مع المستويات
-            let spawnDelay = Math.max(350, 1000 - (currentLvl * 25));
-            gameLoops.push(setTimeout(generateItem, spawnDelay));
-        }
-
-        function handleScoreLogic() {
-            // نظام الـ 30 مستوى: كل 60 نقطة مستوى جديد
-            let nextLvl = Math.floor(currentScore / 60) + 1;
-            if (nextLvl > currentLvl && currentLvl < 30) {
-                currentLvl = nextLvl;
-                document.getElementById('uiLevel').innerText = `مستوى: ${currentLvl}`;
+                    if (x > cvs.offsetWidth) {
+                        clearInterval(move);
+                        o.remove();
+                        currentScore += 10;
+                        document.getElementById('scoreHUD').innerText = "Score: " + currentScore;
+                        
+                        // ترقية المستوى
+                        if (currentScore % 60 === 0 && currentLevel < 30) {
+                            currentLevel++;
+                            document.getElementById('lvlHUD').innerText = "Lvl: " + currentLevel;
+                            confetti({ particleCount: 50, spread: 60 });
+                        }
+                    }
+                }, 20);
+                gameIntervals.push(move);
                 
-                // إشعار المستوى الجديد
-                const notify = document.getElementById('levelNotify');
-                notify.innerText = `LEVEL ${currentLvl}`;
-                notify.style.display = 'block';
-                setTimeout(() => notify.style.display = 'none', 1200);
-
-                // تغيير الهدف عشوائياً عند الصعود
-                activeTarget = gameItems[Math.floor(Math.random() * (gameItems.length - 1))];
-                document.getElementById('uiTarget').innerText = `الهدف: ${activeTarget}`;
-                
-                confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+                let nextSpawn = Math.max(700, 2000 - (currentLevel * 100));
+                setTimeout(createObs, Math.random() * 500 + nextSpawn);
             }
+            createObs();
         }
 
-        function triggerGameOver() {
-            isGameActive = false;
-            alert(`نهاية اللعبة يا زينب!\nالمستوى المحقق: ${currentLvl}\nالسكور النهائي: ${currentScore}`);
-            recordHighscore(currentScore, currentLvl);
-            location.reload();
+        function gameJump() {
+            if (activeGame !== "pepe") return;
+            const p = document.getElementById('pepePlayer');
+            if (p.style.bottom === "140px") return;
+            p.style.bottom = "140px";
+            setTimeout(() => { if(p) p.style.bottom = "25px"; }, 350);
         }
 
-        /* -----------------------------------------------------------
-           إدارة البيانات (Firebase & Logic)
-        ----------------------------------------------------------- */
-        async function runInitialization() {
-            const todayKey = new Date().toISOString().split('T')[0];
-            const snap = await database.ref(`rq_users/${user.id}`).once('value');
-            const userData = snap.val() || {};
-            const history = userData.history || {};
-            const daysDone = Object.keys(history).length;
+        function startMemory() {
+            activeGame = "memory";
+            const cvs = document.getElementById('gameCanvas');
+            cvs.innerHTML = `<button class="back-menu-btn" style="top:10px; bottom:auto;" onclick="event.stopPropagation(); resetCanvas();">الخروج 🏠</button>`;
+            const grid = document.createElement('div');
+            grid.style = "display:grid; grid-template-columns:repeat(4,1fr); gap:12px; padding:70px 20px 20px; height:100%;";
+            
+            const icons = ['👑','⭐','💎','🍎','🚀','🌙','👾','🔥'];
+            const deck = [...icons, ...icons].sort(() => Math.random() - 0.5);
+            let flipped = [];
 
-            document.getElementById('globalLvlStatus').innerText = `تقدمك العام: ${daysDone} / 30 يوم`;
-            document.getElementById('mainProgress').style.width = (daysDone / 30 * 100) + "%";
-
-            if (history[todayKey]) {
-                document.getElementById('gameScreenArea').style.display = 'block';
-                launchGame();
-            } else {
-                document.getElementById('questStage').style.display = 'block';
-                fetchRandomTask();
-            }
-        }
-
-        async function fetchRandomTask() {
-            const snap = await database.ref('rq_challenges').once('value');
-            let tasks = [];
-            snap.forEach(c => tasks.push(c.val().ar));
-            document.getElementById('arabicTaskDisplay').innerText = tasks[Math.floor(Math.random() * tasks.length)] || "ابتسمي للحياة!";
-        }
-
-        async function markQuestDone() {
-            const todayKey = new Date().toISOString().split('T')[0];
-            await database.ref(`rq_users/${user.id}/history/${todayKey}`).set({
-                status: "done",
-                timestamp: Date.now()
-            });
-            confetti();
-            setTimeout(() => location.reload(), 1500);
-        }
-
-        async function recordHighscore(s, l) {
-            const scoreRef = database.ref(`rq_scores/${user.id}`);
-            const existing = await scoreRef.once('value');
-            if (s > (existing.val()?.score || 0)) {
-                await scoreRef.set({
-                    name: user.first_name,
-                    score: s,
-                    level: l
-                });
-            }
-        }
-
-        function updateLeaderboard() {
-            database.ref('rq_scores').orderByChild('score').limitToLast(5).on('value', snap => {
-                let html = "🏆 قائمة العمالقة: ";
-                let players = [];
-                snap.forEach(p => players.push(`${p.val().name} (Lvl ${p.val().level}): ${p.val().score}`));
-                document.getElementById('scoreBoard').innerText = html + players.reverse().join(" | ");
-            });
-        }
-
-        /* -----------------------------------------------------------
-           وظائف الإدارة والخلفية
-        ----------------------------------------------------------- */
-        function toggleAdminPanel(show) {
-            document.getElementById('adminOverlay').style.display = show ? 'block' : 'none';
-        }
-
-        async function submitNewTask() {
-            const text = document.getElementById('inputAr').value;
-            if (text) {
-                await database.ref('rq_challenges').push({ ar: text });
-                document.getElementById('inputAr').value = "";
-                alert("تمت الإضافة بنجاح!");
-            }
-        }
-
-        function processBackground(input) {
-            const file = input.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    document.body.style.backgroundImage = `url(${e.target.result})`;
-                    localStorage.setItem('sultana_bg', e.target.result);
+            deck.forEach(icon => {
+                const card = document.createElement('div');
+                card.style = "background:#111; border:2px solid var(--neon-blue); border-radius:15px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; height:65px;";
+                card.onclick = (e) => {
+                    e.stopPropagation();
+                    if (flipped.length < 2 && !card.innerText) {
+                        card.innerText = icon;
+                        card.style.background = "#1a1a1a";
+                        flipped.push(card);
+                        if (flipped.length === 2) {
+                            if (flipped[0].innerText === flipped[1].innerText) {
+                                flipped = [];
+                                confetti({particleCount: 20});
+                            } else {
+                                setTimeout(() => {
+                                    flipped.forEach(c => { c.innerText = ""; c.style.background = "#111"; });
+                                    flipped = [];
+                                }, 500);
+                            }
+                        }
+                    }
                 };
-                reader.readAsDataURL(file);
+                grid.appendChild(card);
+            });
+            cvs.appendChild(grid);
+        }
+
+        /* ----------------------- إدارة البيانات ----------------------- */
+        async function initApp() {
+            const today = new Date().toISOString().split('T')[0];
+            const snap = await database.ref(`rq_users/${currentUser.id}`).once('value');
+            const data = snap.val() || {};
+            const history = data.history || {};
+            const dayCount = Object.keys(history).length;
+
+            document.getElementById('progText').innerText = `الرحلة: ${dayCount} / 30 يوم`;
+            document.getElementById('progFill').style.width = (dayCount / 30 * 100) + "%";
+
+            if (history[today]) {
+                document.getElementById('mainContainer').style.display = 'flex';
+                updateHighscoreUI();
+            } else {
+                const taskSnap = await database.ref('rq_challenges').once('value');
+                let tasks = [];
+                taskSnap.forEach(t => tasks.push(t.val().ar));
+                document.getElementById('arabicTask').innerText = tasks[Math.floor(Math.random() * tasks.length)] || "ابتسمي!";
+                document.getElementById('questStage').style.display = 'block';
             }
         }
 
-        // استعادة الخلفية المحفوظة
-        if (localStorage.getItem('sultana_bg')) {
-            document.body.style.backgroundImage = `url(${localStorage.getItem('sultana_bg')})`;
+        async function completeQuest() {
+            const today = new Date().toISOString().split('T')[0];
+            await database.ref(`rq_users/${currentUser.id}/history/${today}`).set({ done: true, ts: Date.now() });
+            confetti();
+            setTimeout(() => location.reload(), 1200);
+        }
+
+        async function saveHighscore(s, l) {
+            const ref = database.ref(`rq_scores/${currentUser.id}`);
+            const sn = await ref.once('value');
+            if (s > (sn.val()?.score || 0)) {
+                await ref.set({ name: currentUser.first_name, score: s, level: l });
+            }
+        }
+
+        function updateHighscoreUI() {
+            database.ref('rq_scores').orderByChild('score').limitToLast(1).on('value', snap => {
+                snap.forEach(d => {
+                    document.getElementById('highscoreDisplay').innerText = `🏆 البطل الحالي: ${d.val().name} (Level ${d.val().level})`;
+                });
+            });
+        }
+
+        /* ----------------------- الإدارة والخلفية ----------------------- */
+        function toggleAdmin(show) { document.getElementById('adminPanel').style.display = show ? 'block' : 'none'; }
+        
+        async function pushTask() {
+            const val = document.getElementById('taskInput').value;
+            if (val) {
+                await database.ref('rq_challenges').push({ ar: val });
+                document.getElementById('taskInput').value = "";
+                alert("تمت الإضافة يا زينب!");
+            }
+        }
+
+        function updateBackground(input) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                document.body.style.backgroundImage = `url(${e.target.result})`;
+                localStorage.setItem('custom_bg', e.target.result);
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        if (localStorage.getItem('custom_bg')) {
+            document.body.style.backgroundImage = `url(${localStorage.getItem('custom_bg')})`;
         }
 
         // انطلاق التطبيق
-        runInitialization();
+        initApp();
     </script>
 </body>
 </html>
